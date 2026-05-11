@@ -1,4 +1,4 @@
-package com.jmoore.incidentmanagementapi.entity;
+package com.jmoore.incidentmanagementapi.model.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -35,6 +35,12 @@ public class Monitor {
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    @Column(name = "next_run_at", nullable = false, updatable = false)
+    private LocalDateTime nextRunAt;
+
+    @Column(name = "callback_url", nullable = false)
+    private String callbackUrl;
 
     @PrePersist
     public void prePersist() {

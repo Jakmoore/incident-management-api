@@ -1,4 +1,4 @@
-package com.jmoore.incidentmanagementapi.dto;
+package com.jmoore.incidentmanagementapi.model.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

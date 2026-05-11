@@ -1,4 +1,4 @@
-package com.jmoore.incidentmanagementapi.model;
+package com.jmoore.incidentmanagementapi.model.notification;
 
-public record Notification(String message, String url, int expectedStatusCode, int actualStatusCode) {
+public record Notification(FailureType failureType, String url, int expectedStatusCode, Integer actualStatusCode, String callbackUrl) {
 }

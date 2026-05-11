@@ -13,7 +13,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/monitors")
-public class MonitorController {
+public class AdminController {
 
     private final MonitorService monitorService;
 

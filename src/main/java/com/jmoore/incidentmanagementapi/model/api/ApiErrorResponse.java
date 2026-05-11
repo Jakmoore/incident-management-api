@@ -1,4 +1,6 @@
 package com.jmoore.incidentmanagementapi.model.api;
 
-public class ApiErrorResponse {
+import java.io.Serializable;
+
+public record ApiErrorResponse(String message) implements Serializable {
 }
