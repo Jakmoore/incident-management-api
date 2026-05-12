@@ -13,6 +13,6 @@ public class MonitorExecuterService {
 
     @Async
     public void runMonitor(Monitor monitor) {
-        healthCheckExecutor.executeHealthCheck(monitor.getUrl(), monitor.getExpectedStatus(), monitor.getCallbackUrl());
+        healthCheckExecutor.executeHealthCheck(monitor);
     }
 }

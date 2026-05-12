@@ -1,5 +1,6 @@
 package com.jmoore.incidentmanagementapi.service;
 
+import com.jmoore.incidentmanagementapi.model.entity.Monitor;
 import com.jmoore.incidentmanagementapi.model.notification.FailureType;
 import com.jmoore.incidentmanagementapi.model.notification.Notification;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,7 @@ import org.springframework.web.client.RestClient;
 public class HealthCheckExecutor {
 
     private final RestClient restClient;
+    private final IncidentService incidentService;
     private final NotificationService notificationService;
 
     /**
@@ -26,30 +28,29 @@ public class HealthCheckExecutor {
      * <p>
      * The request will be retried twice in the case of a ResourceAccessException.
      *
-     * @param url                to execute the health check against
-     * @param expectedStatusCode to compare with actual status code
-     * @param callbackUrl        to call upon failure and notify of an issue
+     * @param monitor entity representing the monitor to execute the health check against
      */
     @Retryable(retryFor = ResourceAccessException.class, maxAttempts = 2, backoff = @Backoff(delay = 300))
-    public void executeHealthCheck(String url, int expectedStatusCode, String callbackUrl) {
-        ResponseEntity<Void> response = restClient.get().uri(url).retrieve().toBodilessEntity();
+    public void executeHealthCheck(Monitor monitor) {
+        ResponseEntity<Void> response = restClient.get().uri(monitor.getUrl()).retrieve().toBodilessEntity();
 
         int statusCode = response.getStatusCode().value();
 
-        if (statusCode != expectedStatusCode) {
-            raiseNotification(url, expectedStatusCode, statusCode, callbackUrl);
+        if (statusCode != monitor.getExpectedStatus()) {
+            raiseNotification(monitor.getUrl(), monitor.getExpectedStatus(), statusCode, monitor.getCallbackUrl());
         }
     }
 
     @Recover
-    public void recover(ResourceAccessException ex, String url, int expectedStatusCode, String callbackUrl) {
-        log.warn("Health check failed after max retry attemps for {}, raising notification", url);
+    public void recover(ResourceAccessException ex, Monitor monitor) {
+        log.warn("Health check failed after max retry attemps for {}, raising notification", monitor.getUrl());
 
         if (log.isDebugEnabled()) {
             log.debug("Exception: {}", ex.getMessage());
         }
 
-        notificationService.raiseNotification(new Notification(FailureType.NETWORK_ERROR, url, expectedStatusCode, null, callbackUrl));
+        notificationService.raiseNotification(new Notification(FailureType.NETWORK_ERROR, monitor.getUrl(), monitor.getExpectedStatus(), null, monitor.getCallbackUrl()));
+        incidentService.createIncident(monitor, FailureType.NETWORK_ERROR);
     }
 
     private void raiseNotification(String url, int expectedStatusCode, Integer actualStatusCode, String callbackUrl) {
