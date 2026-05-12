@@ -3,6 +3,9 @@ package com.jmoore.incidentmanagementapi.controller;
 import com.jmoore.incidentmanagementapi.model.dto.CreateMonitorRequestDto;
 import com.jmoore.incidentmanagementapi.model.dto.MonitorResponseDto;
 import com.jmoore.incidentmanagementapi.service.MonitorService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -12,11 +15,14 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/monitors")
-public class AdminController {
+@RequestMapping("/api/admin/monitors")
+@Tag(name = "Monitor Admin Controller")
+public class MonitorAdminController {
 
     private final MonitorService monitorService;
 
+    @ApiResponse(responseCode = "200")
+    @Operation(summary = "Add new monitor")
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<MonitorResponseDto> createMonitor(@RequestBody CreateMonitorRequestDto createMonitorRequest) {
         try {
@@ -27,6 +33,8 @@ public class AdminController {
         }
     }
 
+    @ApiResponse(responseCode = "200")
+    @Operation(summary = "Get all monitors")
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<MonitorResponseDto>> getAllMonitors() {
         try {
@@ -37,6 +45,8 @@ public class AdminController {
         }
     }
 
+    @ApiResponse(responseCode = "200")
+    @Operation(summary = "Get monitor by ID")
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<MonitorResponseDto> getById(@PathVariable Long id) {
         try {

@@ -11,13 +11,13 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class MonitorResponseDto {
+public class IncidentResponseDto {
 
-    private String name;
     private String url;
-    private int expectedStatus;
-    private int intervalSeconds;
-    private boolean active;
+    private String incidentType;
+    private Integer expectedStatus;
+    private Integer actualStatus;
+    private String failureReason;
     private String callbackUrl;
     private LocalDateTime createdAt;
 }

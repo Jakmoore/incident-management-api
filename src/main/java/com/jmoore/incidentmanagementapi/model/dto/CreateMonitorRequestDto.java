@@ -15,4 +15,5 @@ public class CreateMonitorRequestDto {
     private String url;
     private int expectedStatus;
     private int intervalSeconds;
+    private String callbackUrl;
 }
