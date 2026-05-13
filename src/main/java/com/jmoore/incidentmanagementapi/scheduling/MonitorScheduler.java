@@ -17,7 +17,7 @@ public class MonitorScheduler {
     private final MonitorRepository monitorRepository;
     private final MonitorExecutorService executerService;
 
-    @Scheduled(fixedDelay = 5000)
+    @Scheduled(fixedDelay = 30000)
     public void dispatchMonitors() {
         List<Monitor> dueMonitors = monitorRepository.findByActiveTrueAndNextRunAtBefore(LocalDateTime.now());
         dueMonitors.forEach(executerService::runMonitor);

@@ -1,5 +1,6 @@
 package com.jmoore.incidentmanagementapi.service;
 
+import com.jmoore.incidentmanagementapi.exception.MonitorNotFoundException;
 import com.jmoore.incidentmanagementapi.mapper.IncidentMapper;
 import com.jmoore.incidentmanagementapi.model.dto.IncidentResponseDto;
 import com.jmoore.incidentmanagementapi.model.entity.Incident;
@@ -11,7 +12,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import javax.management.monitor.MonitorSettingException;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -26,7 +26,7 @@ public class IncidentService {
 
     public void createIncident(long monitorId, FailureType failureType) {
         Monitor monitor = monitorRepository.findById(monitorId)
-                .orElseThrow(MonitorSettingException::new);
+                .orElseThrow(() -> new MonitorNotFoundException(monitorId));
 
         Incident incident = Incident.builder()
                 .monitor(monitor)
