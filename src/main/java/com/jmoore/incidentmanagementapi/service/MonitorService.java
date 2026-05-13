@@ -44,4 +44,8 @@ public class MonitorService {
 
         return mapper.toResponse(retrieved);
     }
+
+    public Monitor getEntityById(Long id) {
+        return monitorRepository.findById(id).orElseThrow(() -> new MonitorNotFoundException(id));
+    }
 }

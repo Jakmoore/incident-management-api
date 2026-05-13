@@ -4,5 +4,5 @@ public enum FailureType {
 
     NETWORK_ERROR,
     HTTP_STATUS_ERROR,
-    UNKNOWN
+    HTTP_SERVER_ERROR
 }

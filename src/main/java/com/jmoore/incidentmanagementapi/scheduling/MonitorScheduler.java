@@ -2,7 +2,7 @@ package com.jmoore.incidentmanagementapi.scheduling;
 
 import com.jmoore.incidentmanagementapi.model.entity.Monitor;
 import com.jmoore.incidentmanagementapi.repository.MonitorRepository;
-import com.jmoore.incidentmanagementapi.service.MonitorExecuterService;
+import com.jmoore.incidentmanagementapi.service.MonitorExecutorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -15,7 +15,7 @@ import java.util.List;
 public class MonitorScheduler {
 
     private final MonitorRepository monitorRepository;
-    private final MonitorExecuterService executerService;
+    private final MonitorExecutorService executerService;
 
     @Scheduled(fixedDelay = 5000)
     public void dispatchMonitors() {

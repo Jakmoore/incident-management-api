@@ -6,6 +6,7 @@ import com.jmoore.incidentmanagementapi.model.entity.Incident;
 import com.jmoore.incidentmanagementapi.model.entity.Monitor;
 import com.jmoore.incidentmanagementapi.model.notification.FailureType;
 import com.jmoore.incidentmanagementapi.repository.IncidentRepository;
+import com.jmoore.incidentmanagementapi.repository.MonitorRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -19,9 +20,12 @@ import java.util.List;
 public class IncidentService {
 
     private final IncidentMapper mapper;
+    private final MonitorRepository monitorRepository;
     private final IncidentRepository incidentRepository;
 
-    public void createIncident(Monitor monitor, FailureType failureType) {
+    public void createIncident(long monitorId, FailureType failureType) {
+        Monitor monitor = monitorRepository.getReferenceById(monitorId);
+
         Incident incident = Incident.builder()
                 .monitor(monitor)
                 .incidentType(failureType.name())
