@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import javax.management.monitor.MonitorSettingException;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -24,7 +25,8 @@ public class IncidentService {
     private final IncidentRepository incidentRepository;
 
     public void createIncident(long monitorId, FailureType failureType) {
-        Monitor monitor = monitorRepository.getReferenceById(monitorId);
+        Monitor monitor = monitorRepository.findById(monitorId)
+                .orElseThrow(MonitorSettingException::new);
 
         Incident incident = Incident.builder()
                 .monitor(monitor)

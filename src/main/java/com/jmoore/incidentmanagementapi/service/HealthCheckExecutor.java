@@ -44,6 +44,8 @@ public class HealthCheckExecutor {
             return result(false, FailureType.HTTP_STATUS_ERROR, statusCode, monitor.getExpectedStatus(), monitor.getId(), monitor.getUrl(), monitor.getCallbackUrl());
         }
 
+        log.info("Health check successful for monitor ID: {}", monitor.getId());
+
         return result(true, null, statusCode, monitor.getExpectedStatus(), monitor.getId(), monitor.getUrl(), monitor.getCallbackUrl());
     }
 
