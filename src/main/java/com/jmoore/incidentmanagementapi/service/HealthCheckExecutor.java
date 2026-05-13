@@ -23,6 +23,10 @@ public class HealthCheckExecutor {
     /**
      * Executes the health check GET call against the monitor. The monitor is expected to expose
      * an appropriate endpoint for its health check.
+     * <p>
+     * The request will retry 3 times for a ResourceAccessException to allow the service time
+     * to recover from a short network issue. Otherwise, the failure is handled in
+     * {@link #recover(ResourceAccessException, Monitor)}.
      *
      * @param monitor to execute the health check against
      * @return the result
