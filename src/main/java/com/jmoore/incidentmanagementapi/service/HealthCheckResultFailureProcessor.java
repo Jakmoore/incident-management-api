@@ -21,9 +21,9 @@ public class HealthCheckResultFailureProcessor {
 
     private void raiseNotification(HealthCheckResult result) {
         log.warn(
-                "Healthcheck for monitor {} failed. Raising notification for callback URL: {}",
+                "Healthcheck for monitor {} failed. Raising notification for callback email: {}",
                 result.url(),
-                result.callbackUrl()
+                result.callbackEmail()
         );
 
         notificationService.raiseNotification(
@@ -32,7 +32,7 @@ public class HealthCheckResultFailureProcessor {
                         result.url(),
                         result.expectedStatus(),
                         result.actualStatus(),
-                        result.callbackUrl()
+                        result.callbackEmail()
                 )
         );
     }

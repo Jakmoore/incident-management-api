@@ -18,6 +18,6 @@ public class MonitorResponseDto {
     private int expectedStatus;
     private int intervalSeconds;
     private boolean active;
-    private String callbackUrl;
+    private String callbackEmail;
     private LocalDateTime createdAt;
 }

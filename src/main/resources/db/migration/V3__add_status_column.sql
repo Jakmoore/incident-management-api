@@ -1,0 +1,1 @@
+ALTER TABLE public.incidents ADD status BOOLEAN;

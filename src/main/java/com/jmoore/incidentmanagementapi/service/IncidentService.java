@@ -10,6 +10,7 @@ import com.jmoore.incidentmanagementapi.repository.IncidentRepository;
 import com.jmoore.incidentmanagementapi.repository.MonitorRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -24,24 +25,47 @@ public class IncidentService {
     private final MonitorRepository monitorRepository;
     private final IncidentRepository incidentRepository;
 
+    /**
+     * Creates an incident for a monitor failure if no active incident already exists for the same
+     * failure fingerprint.
+     * <p>
+     * A fingerprint is generated from the monitor id, URL, failure type, and callback email to
+     * uniquely identify a logical failure scenario. This is used to prevent duplicate open incidents
+     * for the same ongoing issue.
+     * <p>
+     * If an open incident already exists with the same fingerprint, no new incident is created.
+     *
+     * @param monitorId   the id of the monitor that failed
+     * @param failureType the type of failure detected (e.g. network error, HTTP status mismatch)
+     */
     public void createIncident(long monitorId, FailureType failureType) {
         Monitor monitor = monitorRepository.findById(monitorId)
                 .orElseThrow(() -> new MonitorNotFoundException(monitorId));
 
-        Incident incident = Incident.builder()
-                .monitor(monitor)
-                .incidentType(failureType.name())
-                .expectedStatus(monitor.getExpectedStatus())
-                .url(monitor.getUrl())
-                .callbackUrl(monitor.getCallbackUrl())
-                .createdAt(LocalDateTime.now())
-                .build();
+        String fingerprint = DigestUtils.sha256Hex(
+                monitorId + monitor.getUrl() + failureType.name() + monitor.getCallbackEmail());
 
-        incidentRepository.save(incident);
+        if (incidentRepository.findTopByFingerprintAndOpenIncidentTrueOrderByCreatedAtDesc(fingerprint).isEmpty()) {
+            Incident incident = Incident.builder()
+                    .monitor(monitor)
+                    .incidentType(failureType.name())
+                    .expectedStatus(monitor.getExpectedStatus())
+                    .url(monitor.getUrl())
+                    .callbackEmail(monitor.getCallbackEmail())
+                    .createdAt(LocalDateTime.now())
+                    .fingerprint(fingerprint)
+                    .openIncident(true)
+                    .build();
+
+            incidentRepository.save(incident);
+        }
     }
 
     public List<IncidentResponseDto> getIncidentsByMonitorId(long monitorId) {
         log.info("Processing get incidents request for monitor ID: {}", monitorId);
-        return incidentRepository.findByMonitorId(monitorId).stream().map(mapper::toResponse).toList();
+
+        return incidentRepository.findByMonitorId(monitorId).stream()
+                .map(mapper::toResponse)
+                .toList();
     }
 }

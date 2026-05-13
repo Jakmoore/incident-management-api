@@ -26,7 +26,7 @@ public class MonitorService {
 
         Monitor toCreate = mapper.toEntity(request);
         toCreate.setActive(true);
-        toCreate.setNextRunAt(LocalDateTime.now().plusSeconds(toCreate.getIntervalSeconds()));
+        toCreate.setNextRunAt(calculateNextRunAt(request.getIntervalSeconds()));
 
         Monitor saved = monitorRepository.save(toCreate);
 
@@ -47,5 +47,15 @@ public class MonitorService {
 
     public Monitor getEntityById(Long id) {
         return monitorRepository.findById(id).orElseThrow(() -> new MonitorNotFoundException(id));
+    }
+
+    public void updateNextRunAt(Monitor monitor) {
+        monitor.setNextRunAt(calculateNextRunAt(monitor.getIntervalSeconds()));
+
+        monitorRepository.save(monitor);
+    }
+
+    private LocalDateTime calculateNextRunAt(int intervalSeconds) {
+        return LocalDateTime.now().plusSeconds(intervalSeconds);
     }
 }

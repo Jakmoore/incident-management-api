@@ -18,6 +18,7 @@ public class IncidentResponseDto {
     private Integer expectedStatus;
     private Integer actualStatus;
     private String failureReason;
-    private String callbackUrl;
+    private String callbackEmail;
     private LocalDateTime createdAt;
+    private Boolean openIncident;
 }

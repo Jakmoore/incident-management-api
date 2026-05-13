@@ -37,11 +37,17 @@ public class Incident {
     @Column(name = "failure_reason")
     private String failureReason;
 
-    @Column(name = "callback_url", length = 500)
-    private String callbackUrl;
+    @Column(name = "callback_email", length = 500)
+    private String callbackEmail;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    @Column(name = "fingerprint", updatable = false)
+    private String fingerprint;
+
+    @Column(name = "open_incident")
+    private Boolean openIncident;
 
     @PrePersist
     public void prePersist() {

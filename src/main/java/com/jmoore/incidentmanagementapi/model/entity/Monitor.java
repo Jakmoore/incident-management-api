@@ -39,8 +39,8 @@ public class Monitor {
     @Column(name = "next_run_at", nullable = false, updatable = false)
     private LocalDateTime nextRunAt;
 
-    @Column(name = "callback_url", nullable = false)
-    private String callbackUrl;
+    @Column(name = "callback_email", nullable = false)
+    private String callbackEmail;
 
     @PrePersist
     public void prePersist() {

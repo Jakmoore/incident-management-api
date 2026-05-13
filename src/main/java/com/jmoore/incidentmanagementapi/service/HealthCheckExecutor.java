@@ -21,15 +21,18 @@ public class HealthCheckExecutor {
     private final RestClient restClient;
 
     /**
-     * Executes the health check GET call against the monitor. The monitor is expected to expose
-     * an appropriate endpoint for its health check.
+     * Executes an HTTP GET health check against the provided monitor endpoint.
      * <p>
-     * The request will retry 3 times for a ResourceAccessException to allow the service time
-     * to recover from a short network issue. Otherwise, the failure is handled in
+     * The monitor is expected to expose a reachable health endpoint that returns an HTTP status code
+     * representing its current state.
+     * <p>
+     * The request is retried up to 3 times in the event of a {@link ResourceAccessException}, which
+     * typically indicates transient network issues (e.g. timeouts or connection failures). If all
+     * retry attempts are exhausted, the failure is handled in
      * {@link #recover(ResourceAccessException, Monitor)}.
      *
-     * @param monitor to execute the health check against
-     * @return the result
+     * @param monitor the monitor definition containing the target URL and expected response details
+     * @return a {@code HealthCheckResult} representing success or failure of the health check
      */
     @Retryable(retryFor = ResourceAccessException.class, backoff = @Backoff(delay = 300))
     public HealthCheckResult executeHealthCheck(Monitor monitor) {
@@ -41,12 +44,26 @@ public class HealthCheckExecutor {
         int statusCode = response.getStatusCode().value();
 
         if (statusCode != monitor.getExpectedStatus()) {
-            return result(false, FailureType.HTTP_STATUS_ERROR, statusCode, monitor.getExpectedStatus(), monitor.getId(), monitor.getUrl(), monitor.getCallbackUrl());
+            return result(
+                    false,
+                    FailureType.HTTP_STATUS_ERROR,
+                    statusCode,
+                    monitor.getExpectedStatus(),
+                    monitor.getId(),
+                    monitor.getUrl(),
+                    monitor.getCallbackEmail());
         }
 
         log.info("Health check successful for monitor ID: {}", monitor.getId());
 
-        return result(true, null, statusCode, monitor.getExpectedStatus(), monitor.getId(), monitor.getUrl(), monitor.getCallbackUrl());
+        return result(
+                true,
+                null,
+                statusCode,
+                monitor.getExpectedStatus(),
+                monitor.getId(),
+                monitor.getUrl(),
+                monitor.getCallbackEmail());
     }
 
     @Recover
@@ -57,10 +74,17 @@ public class HealthCheckExecutor {
             log.debug("Exception: {}", ex.getMessage());
         }
 
-        return result(false, FailureType.NETWORK_ERROR, null, monitor.getExpectedStatus(), monitor.getId(), monitor.getUrl(), monitor.getCallbackUrl());
+        return result(
+                false,
+                FailureType.NETWORK_ERROR,
+                null,
+                monitor.getExpectedStatus(),
+                monitor.getId(),
+                monitor.getUrl(),
+                monitor.getCallbackEmail());
     }
 
-    private HealthCheckResult result(boolean success, FailureType type, Integer actual, int expected, long monitorId, String url, String callbackUrl) {
+    private HealthCheckResult result(boolean success, FailureType type, Integer actual, int expected, long monitorId, String url, String callbackEmail) {
         return new HealthCheckResult(
                 success,
                 type,
@@ -68,7 +92,7 @@ public class HealthCheckExecutor {
                 expected,
                 monitorId,
                 url,
-                callbackUrl
+                callbackEmail
         );
     }
 }

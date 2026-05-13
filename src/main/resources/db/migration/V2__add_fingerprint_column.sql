@@ -1,0 +1,1 @@
+ALTER TABLE public.incidents ADD fingerprint VARCHAR(64);

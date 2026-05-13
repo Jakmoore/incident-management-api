@@ -1,0 +1,1 @@
+ALTER TABLE public.incidents RENAME incident_status TO open_incident;

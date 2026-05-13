@@ -9,6 +9,5 @@ public record HealthCheckResult(
         Integer expectedStatus,
         Long monitorId,
         String url,
-        String callbackUrl
-) {
+        String callbackEmail) {
 }

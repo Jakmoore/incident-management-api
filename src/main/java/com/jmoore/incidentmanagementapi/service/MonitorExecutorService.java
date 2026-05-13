@@ -26,5 +26,7 @@ public class MonitorExecutorService {
         if (!result.success()) {
             failureProcessor.process(result);
         }
+
+        monitorService.updateNextRunAt(monitor);
     }
 }

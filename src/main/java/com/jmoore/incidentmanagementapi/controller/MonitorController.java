@@ -14,8 +14,8 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@Tag(name = "Monitor Controller")
 @RequestMapping("/api/monitors")
+@Tag(name = "Monitor Controller")
 public class MonitorController {
 
     private final MonitorExecutorService executerService;
