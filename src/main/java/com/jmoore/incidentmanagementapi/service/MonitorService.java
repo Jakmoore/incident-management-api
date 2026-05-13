@@ -35,12 +35,35 @@ public class MonitorService {
 
     public List<MonitorResponseDto> getAll() {
         log.info("Processing get all monitors request");
+
         return monitorRepository.findAll().stream().map(mapper::toResponse).toList();
     }
 
     public MonitorResponseDto getById(Long id) {
         log.info("Processing get monitor request for ID: {}", id);
         Monitor retrieved = monitorRepository.findById(id).orElseThrow(() -> new MonitorNotFoundException(id));
+
+        return mapper.toResponse(retrieved);
+    }
+
+    public MonitorResponseDto enableMonitor(Long id) {
+        log.info("Processing enable monitor request for ID {}", id);
+
+        return updateActive(id, true);
+    }
+
+    public MonitorResponseDto disableMonitor(Long id) {
+        log.info("Processing disable monitor request for ID {}", id);
+
+        return updateActive(id, false);
+    }
+
+    // Internal use only endpoints -------------------------------------------
+    private MonitorResponseDto updateActive(Long id, boolean active) {
+        Monitor retrieved = monitorRepository.findById(id).orElseThrow(() -> new MonitorNotFoundException(id));
+        retrieved.setActive(active);
+
+        monitorRepository.save(retrieved);
 
         return mapper.toResponse(retrieved);
     }

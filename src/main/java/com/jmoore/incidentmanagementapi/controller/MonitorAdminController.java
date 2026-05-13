@@ -55,4 +55,26 @@ public class MonitorAdminController {
             return ResponseEntity.internalServerError().build();
         }
     }
+
+    @ApiResponse(responseCode = "200")
+    @Operation(summary = "Enable monitor")
+    @PatchMapping(value = "/{id}/enable")
+    public ResponseEntity<MonitorResponseDto> enableMonitor(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(monitorService.enableMonitor(id));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @ApiResponse(responseCode = "200")
+    @Operation(summary = "Disable monitor")
+    @PatchMapping(value = "/{id}/disable")
+    public ResponseEntity<MonitorResponseDto> disableMonitor(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(monitorService.disableMonitor(id));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
 }

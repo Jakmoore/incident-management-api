@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class MonitorResponseDto {
 
+    private Long id;
     private String name;
     private String url;
     private int expectedStatus;
