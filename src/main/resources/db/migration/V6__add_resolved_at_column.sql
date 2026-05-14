@@ -1,0 +1,1 @@
+ALTER TABLE public.incidents ADD resolved_at TIMESTAMPTZ;

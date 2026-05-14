@@ -49,6 +49,9 @@ public class Incident {
     @Column(name = "open_incident")
     private Boolean openIncident;
 
+    @Column(name = "resolved_at", updatable = false)
+    private LocalDateTime resolvedAt;
+
     @PrePersist
     public void prePersist() {
         this.createdAt = LocalDateTime.now();

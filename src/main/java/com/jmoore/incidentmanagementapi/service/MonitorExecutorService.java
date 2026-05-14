@@ -12,7 +12,7 @@ public class MonitorExecutorService {
 
     private final MonitorService monitorService;
     private final HealthCheckExecutor healthCheckExecutor;
-    private final HealthCheckResultFailureProcessor failureProcessor;
+    private final HealthCheckResultProcessor resultProcessor;
 
     public void runMonitor(long monitorId) {
         Monitor monitor = monitorService.getEntityById(monitorId);
@@ -22,14 +22,7 @@ public class MonitorExecutorService {
     @Async
     public void runMonitor(Monitor monitor) {
         HealthCheckResult result = healthCheckExecutor.executeHealthCheck(monitor);
-
-        if (!result.success()) {
-            failureProcessor.process(result);
-        }
-
-        // TODO: Need to add something here to see if the monitor has an open incident.
-        // TODO: If monitor succeeds, close incident
-
+        resultProcessor.process(result);
         monitorService.updateNextRunAt(monitor);
     }
 }

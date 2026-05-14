@@ -21,4 +21,5 @@ public class IncidentResponseDto {
     private String callbackEmail;
     private LocalDateTime createdAt;
     private Boolean openIncident;
+    private LocalDateTime resolvedAt;
 }

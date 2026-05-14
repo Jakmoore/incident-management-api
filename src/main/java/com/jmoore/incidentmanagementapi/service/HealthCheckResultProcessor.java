@@ -9,14 +9,16 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class HealthCheckResultFailureProcessor {
+public class HealthCheckResultProcessor {
 
     private final NotificationService notificationService;
     private final IncidentService incidentService;
 
     public void process(HealthCheckResult healthCheckResult) {
-        raiseNotification(healthCheckResult);
-        createIncident(healthCheckResult);
+        if (!healthCheckResult.success()) {
+            raiseNotification(healthCheckResult);
+            processIncident(healthCheckResult);
+        }
     }
 
     private void raiseNotification(HealthCheckResult result) {
@@ -37,8 +39,7 @@ public class HealthCheckResultFailureProcessor {
         );
     }
 
-    private void createIncident(HealthCheckResult result) {
-        log.info("Creating incident log for monitor ID: {}", result.monitorId());
-        incidentService.createIncident(result.monitorId(), result.failureType());
+    private void processIncident(HealthCheckResult result) {
+        incidentService.processIncident(result.monitorId(), result.failureType());
     }
 }

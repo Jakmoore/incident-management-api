@@ -24,8 +24,8 @@ public class MonitorController {
     @GetMapping("/{monitorId}")
     public ResponseEntity<Void> runMonitor(@PathVariable Long monitorId) {
         log.info("Executing manual health check for monitor ID: {}", monitorId);
-
         executerService.runMonitor(monitorId);
+
         return ResponseEntity.ok().build();
     }
 }

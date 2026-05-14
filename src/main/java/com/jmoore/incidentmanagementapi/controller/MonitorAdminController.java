@@ -25,79 +25,54 @@ public class MonitorAdminController {
     @Operation(summary = "Add new monitor")
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<MonitorResponseDto> createMonitor(@RequestBody MonitorRequestDto createMonitorRequest) {
-        try {
-            MonitorResponseDto created = monitorService.createMonitor(createMonitorRequest);
-            return ResponseEntity.ok(created);
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().build();
-        }
+        MonitorResponseDto created = monitorService.createMonitor(createMonitorRequest);
+
+        return ResponseEntity.ok(created);
     }
 
     @ApiResponse(responseCode = "200")
     @Operation(summary = "Get all monitors")
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<MonitorResponseDto>> getAllMonitors() {
-        try {
-            List<MonitorResponseDto> monitors = monitorService.getAll();
-            return ResponseEntity.ok(monitors);
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().build();
-        }
+        List<MonitorResponseDto> monitors = monitorService.getAll();
+
+        return ResponseEntity.ok(monitors);
     }
 
     @ApiResponse(responseCode = "200")
     @Operation(summary = "Get monitor by ID")
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<MonitorResponseDto> getById(@PathVariable Long id) {
-        try {
-            return ResponseEntity.ok(monitorService.getById(id));
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().build();
-        }
+        return ResponseEntity.ok(monitorService.getById(id));
     }
 
     @ApiResponse(responseCode = "200")
     @Operation(summary = "Enable monitor")
     @PatchMapping(value = "/{id}/enable")
     public ResponseEntity<MonitorResponseDto> enableMonitor(@PathVariable Long id) {
-        try {
-            return ResponseEntity.ok(monitorService.enableMonitor(id));
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().build();
-        }
+        return ResponseEntity.ok(monitorService.enableMonitor(id));
     }
 
     @ApiResponse(responseCode = "200")
     @Operation(summary = "Disable monitor")
     @PatchMapping(value = "/{id}/disable")
     public ResponseEntity<MonitorResponseDto> disableMonitor(@PathVariable Long id) {
-        try {
-            return ResponseEntity.ok(monitorService.disableMonitor(id));
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().build();
-        }
+        return ResponseEntity.ok(monitorService.disableMonitor(id));
     }
 
     @ApiResponse(responseCode = "200")
     @Operation(summary = "Update monitor configuration")
     @PutMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<MonitorResponseDto> updateMonitorConfiguration(@PathVariable Long id, @RequestBody MonitorRequestDto request) {
-        try {
-            return ResponseEntity.ok(monitorService.updateMonitorConfiguration(id, request));
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().build();
-        }
+        return ResponseEntity.ok(monitorService.updateMonitorConfiguration(id, request));
     }
 
     @ApiResponse(responseCode = "200")
     @Operation(summary = "Delete monitor")
     @DeleteMapping(value = "/{id}")
     public ResponseEntity<Void> deleteMonitor(@PathVariable Long id) {
-        try {
-            monitorService.deleteMonitor(id);
-            return ResponseEntity.noContent().build();
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().build();
-        }
+        monitorService.deleteMonitor(id);
+
+        return ResponseEntity.noContent().build();
     }
 }

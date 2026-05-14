@@ -27,11 +27,8 @@ public class IncidentController {
     @Operation(summary = "Get incidents by monitor ID")
     @GetMapping(value = "/{monitorId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<IncidentResponseDto>> getByMonitorId(@PathVariable Long monitorId) {
-        try {
-            List<IncidentResponseDto> incidents = incidentService.getIncidentsByMonitorId(monitorId);
-            return ResponseEntity.ok(incidents);
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().build();
-        }
+        List<IncidentResponseDto> incidents = incidentService.getIncidentsByMonitorId(monitorId);
+
+        return ResponseEntity.ok(incidents);
     }
 }

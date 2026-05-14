@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -38,15 +39,20 @@ public class IncidentService {
      * @param monitorId   the id of the monitor that failed
      * @param failureType the type of failure detected (e.g. network error, HTTP status mismatch)
      */
-    public void createIncident(long monitorId, FailureType failureType) {
+    public void processIncident(long monitorId, FailureType failureType) {
         Monitor monitor = monitorRepository.findById(monitorId)
                 .orElseThrow(() -> new MonitorNotFoundException(monitorId));
 
-        String fingerprint = DigestUtils.sha256Hex(
+        String fingerprint = generateFingerprint(
                 monitorId + monitor.getUrl() + failureType.name() + monitor.getCallbackEmail());
 
-        if (incidentRepository.findTopByFingerprintAndOpenIncidentTrueOrderByCreatedAtDesc(fingerprint).isEmpty()) {
-            Incident incident = Incident.builder()
+        Optional<Incident> loggedIncident =
+                incidentRepository.findTopByFingerprintAndOpenIncidentTrueOrderByCreatedAtDesc(fingerprint);
+
+        Incident toSave;
+
+        if (loggedIncident.isEmpty()) {
+            toSave = Incident.builder()
                     .monitor(monitor)
                     .incidentType(failureType.name())
                     .expectedStatus(monitor.getExpectedStatus())
@@ -56,9 +62,13 @@ public class IncidentService {
                     .fingerprint(fingerprint)
                     .openIncident(true)
                     .build();
-
-            incidentRepository.save(incident);
+        } else {
+            toSave = loggedIncident.get();
+            toSave.setOpenIncident(false);
+            toSave.setResolvedAt(LocalDateTime.now());
         }
+
+        incidentRepository.save(toSave);
     }
 
     public List<IncidentResponseDto> getIncidentsByMonitorId(long monitorId) {
@@ -67,5 +77,9 @@ public class IncidentService {
         return incidentRepository.findByMonitorId(monitorId).stream()
                 .map(mapper::toResponse)
                 .toList();
+    }
+
+    private String generateFingerprint(String toEncode) {
+        return DigestUtils.sha256Hex(toEncode);
     }
 }
