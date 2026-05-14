@@ -1,6 +1,6 @@
 package com.jmoore.incidentmanagementapi.controller;
 
-import com.jmoore.incidentmanagementapi.model.dto.CreateMonitorRequestDto;
+import com.jmoore.incidentmanagementapi.model.dto.MonitorRequestDto;
 import com.jmoore.incidentmanagementapi.model.dto.MonitorResponseDto;
 import com.jmoore.incidentmanagementapi.service.MonitorService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -24,7 +24,7 @@ public class MonitorAdminController {
     @ApiResponse(responseCode = "200")
     @Operation(summary = "Add new monitor")
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<MonitorResponseDto> createMonitor(@RequestBody CreateMonitorRequestDto createMonitorRequest) {
+    public ResponseEntity<MonitorResponseDto> createMonitor(@RequestBody MonitorRequestDto createMonitorRequest) {
         try {
             MonitorResponseDto created = monitorService.createMonitor(createMonitorRequest);
             return ResponseEntity.ok(created);
@@ -73,6 +73,29 @@ public class MonitorAdminController {
     public ResponseEntity<MonitorResponseDto> disableMonitor(@PathVariable Long id) {
         try {
             return ResponseEntity.ok(monitorService.disableMonitor(id));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @ApiResponse(responseCode = "200")
+    @Operation(summary = "Update monitor configuration")
+    @PutMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<MonitorResponseDto> updateMonitorConfiguration(@PathVariable Long id, @RequestBody MonitorRequestDto request) {
+        try {
+            return ResponseEntity.ok(monitorService.updateMonitorConfiguration(id, request));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @ApiResponse(responseCode = "200")
+    @Operation(summary = "Delete monitor")
+    @DeleteMapping(value = "/{id}")
+    public ResponseEntity<Void> deleteMonitor(@PathVariable Long id) {
+        try {
+            monitorService.deleteMonitor(id);
+            return ResponseEntity.noContent().build();
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();
         }

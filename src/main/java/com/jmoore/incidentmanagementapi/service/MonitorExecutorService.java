@@ -27,6 +27,9 @@ public class MonitorExecutorService {
             failureProcessor.process(result);
         }
 
+        // TODO: Need to add something here to see if the monitor has an open incident.
+        // TODO: If monitor succeeds, close incident
+
         monitorService.updateNextRunAt(monitor);
     }
 }

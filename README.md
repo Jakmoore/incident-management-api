@@ -2,7 +2,8 @@
 
 A backend monitoring and incident management service built with Java and Spring Boot.
 
-This project allows users to register health-check monitors for external services, run scheduled checks against those endpoints, and automatically log incidents when failures occur.
+This project allows users to register health-check monitors for external services, run scheduled checks against those
+endpoints, and automatically log incidents when failures occur.
 
 ---
 
@@ -56,62 +57,55 @@ Each incident stores:
 
 ## 📡 API Endpoints
 
-### Current Endpoints
+## Available Endpoints
 
-#### Monitor Administration
+### Monitor Administration
 
 Base path: `/api/admin/monitors`
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/admin/monitors` | Create a new monitor |
-| GET | `/api/admin/monitors` | Retrieve all monitors |
-| GET | `/api/admin/monitors/{id}` | Retrieve monitor by ID |
-| PATCH | `/api/admin/monitors/{id}/enable` | Enable monitor |
-| PATCH | `/api/admin/monitors/{id}/disable` | Disable monitor |
-
-#### Manual Monitor Execution
-
-Base path: `/api/monitors`
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/monitors/{monitorId}` | Manually execute health check |
-
-#### Incident Retrieval
-
-Base path: `/api/incidents`
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/incidents/{monitorId}` | Retrieve incidents for a monitor |
+| Method | Endpoint                           | Description                  |
+|--------|------------------------------------|------------------------------|
+| POST   | `/api/admin/monitors`              | Create a new monitor         |
+| GET    | `/api/admin/monitors`              | Retrieve all monitors        |
+| GET    | `/api/admin/monitors/{id}`         | Retrieve monitor by ID       |
+| PUT    | `/api/admin/monitors/{id}`         | Update monitor configuration |
+| PATCH  | `/api/admin/monitors/{id}/enable`  | Enable monitor               |
+| PATCH  | `/api/admin/monitors/{id}/disable` | Disable monitor              |
+| DELETE | `/api/admin/monitors/{id}`         | Delete monitor               |
+| POST   | `/api/admin/monitors/run-all`      | Trigger all active monitors  |
 
 ---
 
-### Planned Endpoints
+### Manual Monitor Execution
 
-These are intended future enhancements.
+Base path: `/api/monitors`
 
-#### Monitor Administration
+| Method | Endpoint                    | Description                   |
+|--------|-----------------------------|-------------------------------|
+| GET    | `/api/monitors/{monitorId}` | Manually execute health check |
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| PUT | `/api/admin/monitors/{id}` | Update monitor configuration |
-| DELETE | `/api/admin/monitors/{id}` | Delete monitor |
+---
 
-#### Manual Execution
+### Incident Retrieval
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/monitors/run-all` | Trigger all active monitors |
+Base path: `/api/incidents`
 
-#### Incident Management
+| Method | Endpoint                     | Description                      |
+|--------|------------------------------|----------------------------------|
+| GET    | `/api/incidents/{monitorId}` | Retrieve incidents for a monitor |
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/incidents` | Retrieve all incidents |
-| GET | `/api/incidents/open` | Retrieve open incidents |
-| PATCH | `/api/incidents/{id}/resolve` | Resolve incident manually |
+---
+
+## Planned Endpoints
+
+Base path: `/api/admin/incidents`
+
+| Method | Endpoint                            | Description               |
+|--------|-------------------------------------|---------------------------|
+| GET    | `/api/admin/incidents`              | Retrieve all incidents    |
+| GET    | `/api/admin/incidents/open`         | Retrieve open incidents   |
+| PATCH  | `/api/admin/incidents/{id}/resolve` | Resolve incident manually |
+| DELETE | `/api/admin/incidents/{id}`         | Delete incident           |
 
 ---
 

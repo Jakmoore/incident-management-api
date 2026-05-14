@@ -2,7 +2,7 @@ package com.jmoore.incidentmanagementapi.service;
 
 import com.jmoore.incidentmanagementapi.exception.MonitorNotFoundException;
 import com.jmoore.incidentmanagementapi.mapper.MonitorMapper;
-import com.jmoore.incidentmanagementapi.model.dto.CreateMonitorRequestDto;
+import com.jmoore.incidentmanagementapi.model.dto.MonitorRequestDto;
 import com.jmoore.incidentmanagementapi.model.dto.MonitorResponseDto;
 import com.jmoore.incidentmanagementapi.model.entity.Monitor;
 import com.jmoore.incidentmanagementapi.repository.MonitorRepository;
@@ -21,7 +21,7 @@ public class MonitorService {
     private final MonitorMapper mapper;
     private final MonitorRepository monitorRepository;
 
-    public MonitorResponseDto createMonitor(CreateMonitorRequestDto request) {
+    public MonitorResponseDto createMonitor(MonitorRequestDto request) {
         log.info("Processing create monitor request for URL: {}", request.getUrl());
 
         Monitor toCreate = mapper.toEntity(request);
@@ -41,6 +41,7 @@ public class MonitorService {
 
     public MonitorResponseDto getById(Long id) {
         log.info("Processing get monitor request for ID: {}", id);
+
         Monitor retrieved = monitorRepository.findById(id).orElseThrow(() -> new MonitorNotFoundException(id));
 
         return mapper.toResponse(retrieved);
@@ -56,6 +57,24 @@ public class MonitorService {
         log.info("Processing disable monitor request for ID {}", id);
 
         return updateActive(id, false);
+    }
+
+    public MonitorResponseDto updateMonitorConfiguration(Long id, MonitorRequestDto request) {
+        log.info("Processing update monitor configuration for ID: {}", id);
+
+        Monitor retrieved = monitorRepository.findById(id).orElseThrow(() -> new MonitorNotFoundException(id));
+
+        mapper.updateEntityFromDto(request, retrieved);
+        monitorRepository.save(retrieved);
+
+        return mapper.toResponse(retrieved);
+    }
+
+    public void deleteMonitor(Long id) {
+        log.info("Processing delete monitor request for ID: {}", id);
+
+        monitorRepository.findById(id).orElseThrow(() -> new MonitorNotFoundException(id));
+        monitorRepository.deleteById(id);
     }
 
     // Internal use only endpoints -------------------------------------------
