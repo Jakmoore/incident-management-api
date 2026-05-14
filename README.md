@@ -9,13 +9,14 @@ This project allows users to register health-check monitors for external service
 ## 🚀 Features
 
 ### Monitor Management
+
 Create and manage monitors with configurable:
 
 - Name
 - URL
 - Expected HTTP status code
 - Check interval (seconds)
-- Callback URL
+- Callback email
 - Active / inactive status
 
 ### Automated Health Checks
@@ -28,6 +29,10 @@ Each monitor request:
 - Compares actual vs expected status
 - Supports retry logic for transient network failures
 - Runs in parallel so slow endpoints do not block others
+
+### Manual Health Check Execution
+
+Monitors can also be executed manually via API endpoints for immediate verification or troubleshooting.
 
 ### Incident Logging
 
@@ -44,6 +49,69 @@ Each incident stores:
 - Expected status
 - Actual status (if available)
 - Timestamp
+- Fingerprint
+- Open incident flag
+
+---
+
+## 📡 API Endpoints
+
+### Current Endpoints
+
+#### Monitor Administration
+
+Base path: `/api/admin/monitors`
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/admin/monitors` | Create a new monitor |
+| GET | `/api/admin/monitors` | Retrieve all monitors |
+| GET | `/api/admin/monitors/{id}` | Retrieve monitor by ID |
+| PATCH | `/api/admin/monitors/{id}/enable` | Enable monitor |
+| PATCH | `/api/admin/monitors/{id}/disable` | Disable monitor |
+
+#### Manual Monitor Execution
+
+Base path: `/api/monitors`
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/monitors/{monitorId}` | Manually execute health check |
+
+#### Incident Retrieval
+
+Base path: `/api/incidents`
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/incidents/{monitorId}` | Retrieve incidents for a monitor |
+
+---
+
+### Planned Endpoints
+
+These are intended future enhancements.
+
+#### Monitor Administration
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| PUT | `/api/admin/monitors/{id}` | Update monitor configuration |
+| DELETE | `/api/admin/monitors/{id}` | Delete monitor |
+
+#### Manual Execution
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/monitors/run-all` | Trigger all active monitors |
+
+#### Incident Management
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/incidents` | Retrieve all incidents |
+| GET | `/api/incidents/open` | Retrieve open incidents |
+| PATCH | `/api/incidents/{id}/resolve` | Resolve incident manually |
 
 ---
 
@@ -76,4 +144,6 @@ HTTP health check
    ↓
 Retry transient failures
    ↓
-Create incident on failure
+Generate health check result
+   ↓
+Raise notification + create incident
