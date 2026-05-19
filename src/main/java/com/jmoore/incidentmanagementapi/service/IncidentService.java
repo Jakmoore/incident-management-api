@@ -70,7 +70,8 @@ public class IncidentService {
     public List<IncidentResponseDto> getIncidentsByMonitorId(long monitorId) {
         log.info("Processing get incidents request for monitor ID: {}", monitorId);
 
-        return incidentRepository.findByMonitorId(monitorId).stream()
+        return incidentRepository.findByMonitorId(monitorId)
+                .stream()
                 .map(mapper::toResponse)
                 .toList();
     }
