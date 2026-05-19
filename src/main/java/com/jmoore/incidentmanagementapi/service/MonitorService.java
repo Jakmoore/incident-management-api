@@ -85,15 +85,6 @@ public class MonitorService {
     }
 
     // Internal use only endpoints -------------------------------------------
-    private MonitorResponseDto updateActive(Long id, boolean active) {
-        Monitor retrieved = getEntityById(id);
-        retrieved.setActive(active);
-
-        monitorRepository.save(retrieved);
-
-        return mapper.toResponse(retrieved);
-    }
-
     public Monitor getEntityById(Long id) {
         return monitorRepository.findById(id).orElseThrow(() -> new MonitorNotFoundException(id));
     }
@@ -103,6 +94,15 @@ public class MonitorService {
         monitor.setNextRunAt(calculateNextRunAt(monitor.getIntervalSeconds()));
 
         monitorRepository.save(monitor);
+    }
+
+    private MonitorResponseDto updateActive(Long id, boolean active) {
+        Monitor retrieved = getEntityById(id);
+        retrieved.setActive(active);
+
+        monitorRepository.save(retrieved);
+
+        return mapper.toResponse(retrieved);
     }
 
     private LocalDateTime calculateNextRunAt(int intervalSeconds) {
