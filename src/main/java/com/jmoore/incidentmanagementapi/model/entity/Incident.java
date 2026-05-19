@@ -49,7 +49,7 @@ public class Incident {
     @Column(name = "open_incident")
     private Boolean openIncident;
 
-    @Column(name = "resolved_at", updatable = false)
+    @Column(name = "resolved_at")
     private LocalDateTime resolvedAt;
 
     @PrePersist

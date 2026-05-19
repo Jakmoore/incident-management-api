@@ -15,6 +15,9 @@ public class HealthCheckResultProcessor {
     private final IncidentService incidentService;
 
     public void process(HealthCheckResult healthCheckResult) {
+
+        // TODO: BUG - a 2nd failed health checks will resolve the first...
+
         if (!healthCheckResult.success()) {
             raiseNotification(healthCheckResult);
             processIncident(healthCheckResult);

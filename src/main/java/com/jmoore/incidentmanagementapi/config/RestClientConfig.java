@@ -1,6 +1,7 @@
 package com.jmoore.incidentmanagementapi.config;
 
-import org.springframework.beans.factory.annotation.Value;
+import com.jmoore.incidentmanagementapi.config.properties.RestClientProperties;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.ClientHttpRequestFactory;
@@ -8,13 +9,10 @@ import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestClient;
 
 @Configuration
+@RequiredArgsConstructor
 public class RestClientConfig {
 
-    @Value("${rest.client.connect.timeout:3000}")
-    private int connectTimeout;
-
-    @Value("${rest.client.read.timeout:3000}")
-    private int readTimeout;
+    private final RestClientProperties restClientProperties;
 
     @Bean
     public RestClient restClient() {
@@ -25,8 +23,8 @@ public class RestClientConfig {
 
     private ClientHttpRequestFactory clientHttpRequestFactory() {
         SimpleClientHttpRequestFactory clientHttpRequestFactory = new SimpleClientHttpRequestFactory();
-        clientHttpRequestFactory.setConnectTimeout(connectTimeout);
-        clientHttpRequestFactory.setReadTimeout(readTimeout);
+        clientHttpRequestFactory.setConnectTimeout(restClientProperties.getConnectTimeout());
+        clientHttpRequestFactory.setReadTimeout(restClientProperties.getReadTimeout());
 
         return clientHttpRequestFactory;
     }

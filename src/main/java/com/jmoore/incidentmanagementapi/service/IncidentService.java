@@ -46,12 +46,12 @@ public class IncidentService {
         String fingerprint = generateFingerprint(
                 monitorId + monitor.getUrl() + failureType.name() + monitor.getCallbackEmail());
 
-        Optional<Incident> loggedIncident =
+        Optional<Incident> openIncident =
                 incidentRepository.findTopByFingerprintAndOpenIncidentTrueOrderByCreatedAtDesc(fingerprint);
 
         Incident toSave;
 
-        if (loggedIncident.isEmpty()) {
+        if (openIncident.isEmpty()) {
             toSave = Incident.builder()
                     .monitor(monitor)
                     .incidentType(failureType.name())
@@ -63,7 +63,7 @@ public class IncidentService {
                     .openIncident(true)
                     .build();
         } else {
-            toSave = loggedIncident.get();
+            toSave = openIncident.get();
             toSave.setOpenIncident(false);
             toSave.setResolvedAt(LocalDateTime.now());
         }
@@ -82,4 +82,6 @@ public class IncidentService {
     private String generateFingerprint(String toEncode) {
         return DigestUtils.sha256Hex(toEncode);
     }
+
+    // new incident + update incident method
 }
