@@ -13,4 +13,6 @@ public interface IncidentRepository extends JpaRepository<Incident, Long> {
     List<Incident> findByMonitorId(long monitorId);
 
     Optional<Incident> findTopByFingerprintAndOpenIncidentTrueOrderByCreatedAtDesc(String fingerprint);
+
+    Optional<Incident> findTopByMonitorIdAndOpenIncidentTrue(long monitorId);
 }

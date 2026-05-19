@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -39,6 +40,7 @@ public class IncidentService {
      * @param monitorId   the id of the monitor that failed
      * @param failureType the type of failure detected (e.g. network error, HTTP status mismatch)
      */
+    @Transactional
     public void processIncident(long monitorId, FailureType failureType) {
         Monitor monitor = monitorRepository.findById(monitorId)
                 .orElseThrow(() -> new MonitorNotFoundException(monitorId));
@@ -49,10 +51,8 @@ public class IncidentService {
         Optional<Incident> openIncident =
                 incidentRepository.findTopByFingerprintAndOpenIncidentTrueOrderByCreatedAtDesc(fingerprint);
 
-        Incident toSave;
-
         if (openIncident.isEmpty()) {
-            toSave = Incident.builder()
+            Incident incident = Incident.builder()
                     .monitor(monitor)
                     .incidentType(failureType.name())
                     .expectedStatus(monitor.getExpectedStatus())
@@ -62,13 +62,9 @@ public class IncidentService {
                     .fingerprint(fingerprint)
                     .openIncident(true)
                     .build();
-        } else {
-            toSave = openIncident.get();
-            toSave.setOpenIncident(false);
-            toSave.setResolvedAt(LocalDateTime.now());
-        }
 
-        incidentRepository.save(toSave);
+            incidentRepository.save(incident);
+        }
     }
 
     public List<IncidentResponseDto> getIncidentsByMonitorId(long monitorId) {
@@ -79,9 +75,22 @@ public class IncidentService {
                 .toList();
     }
 
+    public void resolveLast(long monitorId) {
+        Optional<Incident> incident = incidentRepository.findTopByMonitorIdAndOpenIncidentTrue(monitorId);
+
+        incident.ifPresent(value -> resolveIncident(incident.get()));
+    }
+
+    @Transactional
+    private void resolveIncident(Incident incident) {
+        log.info("Resolving incident for monitor ID: {}", incident.getMonitor().getId());
+
+        incident.setOpenIncident(false);
+        incident.setResolvedAt(LocalDateTime.now());
+        incidentRepository.save(incident);
+    }
+
     private String generateFingerprint(String toEncode) {
         return DigestUtils.sha256Hex(toEncode);
     }
-
-    // new incident + update incident method
 }

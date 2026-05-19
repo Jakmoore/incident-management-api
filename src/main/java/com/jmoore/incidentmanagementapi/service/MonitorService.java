@@ -9,6 +9,7 @@ import com.jmoore.incidentmanagementapi.repository.MonitorRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -21,6 +22,7 @@ public class MonitorService {
     private final MonitorMapper mapper;
     private final MonitorRepository monitorRepository;
 
+    @Transactional
     public MonitorResponseDto createMonitor(MonitorRequestDto request) {
         log.info("Processing create monitor request for URL: {}", request.getUrl());
 
@@ -42,27 +44,30 @@ public class MonitorService {
     public MonitorResponseDto getById(Long id) {
         log.info("Processing get monitor request for ID: {}", id);
 
-        Monitor retrieved = monitorRepository.findById(id).orElseThrow(() -> new MonitorNotFoundException(id));
+        Monitor retrieved = getEntityById(id);
 
         return mapper.toResponse(retrieved);
     }
 
+    @Transactional
     public MonitorResponseDto enableMonitor(Long id) {
         log.info("Processing enable monitor request for ID {}", id);
 
         return updateActive(id, true);
     }
 
+    @Transactional
     public MonitorResponseDto disableMonitor(Long id) {
         log.info("Processing disable monitor request for ID {}", id);
 
         return updateActive(id, false);
     }
 
+    @Transactional
     public MonitorResponseDto updateMonitorConfiguration(Long id, MonitorRequestDto request) {
         log.info("Processing update monitor configuration for ID: {}", id);
 
-        Monitor retrieved = monitorRepository.findById(id).orElseThrow(() -> new MonitorNotFoundException(id));
+        Monitor retrieved = getEntityById(id);
 
         mapper.updateEntityFromDto(request, retrieved);
         monitorRepository.save(retrieved);
@@ -70,16 +75,18 @@ public class MonitorService {
         return mapper.toResponse(retrieved);
     }
 
+    @Transactional
     public void deleteMonitor(Long id) {
         log.info("Processing delete monitor request for ID: {}", id);
 
-        monitorRepository.findById(id).orElseThrow(() -> new MonitorNotFoundException(id));
+        Monitor ignored = getEntityById(id);
+
         monitorRepository.deleteById(id);
     }
 
     // Internal use only endpoints -------------------------------------------
     private MonitorResponseDto updateActive(Long id, boolean active) {
-        Monitor retrieved = monitorRepository.findById(id).orElseThrow(() -> new MonitorNotFoundException(id));
+        Monitor retrieved = getEntityById(id);
         retrieved.setActive(active);
 
         monitorRepository.save(retrieved);
@@ -91,6 +98,7 @@ public class MonitorService {
         return monitorRepository.findById(id).orElseThrow(() -> new MonitorNotFoundException(id));
     }
 
+    @Transactional
     public void updateNextRunAt(Monitor monitor) {
         monitor.setNextRunAt(calculateNextRunAt(monitor.getIntervalSeconds()));
 
