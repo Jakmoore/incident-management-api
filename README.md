@@ -59,7 +59,9 @@ Each incident stores:
 
 ## Available Endpoints
 
-### Monitor Administration
+---
+
+### Admin Monitor Management
 
 Base path: `/api/admin/monitors`
 
@@ -90,13 +92,14 @@ Base path: `/api/monitors`
 
 Base path: `/api/incidents`
 
-| Method | Endpoint                     | Description                      |
-|--------|------------------------------|----------------------------------|
-| GET    | `/api/incidents/{monitorId}` | Retrieve incidents for a monitor |
+| Method | Endpoint                                   | Description                                                  |
+|--------|--------------------------------------------|--------------------------------------------------------------|
+| GET    | `/api/incidents/{monitorId}`               | Retrieve all incidents for a monitor                         |
+| GET    | `/api/incidents/{monitorId}?openOnly=true` | Retrieve only open incidents for a monitor (optional filter) |
 
 ---
 
-## Planned Endpoints
+### Admin Incident Management
 
 Base path: `/api/admin/incidents`
 
@@ -141,3 +144,4 @@ Retry transient failures
 Generate health check result
    ↓
 Raise notification + create incident
+```

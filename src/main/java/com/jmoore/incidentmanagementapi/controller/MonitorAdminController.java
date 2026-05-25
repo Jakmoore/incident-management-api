@@ -34,9 +34,7 @@ public class MonitorAdminController {
     @Operation(summary = "Get all monitors")
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<MonitorResponseDto>> getAllMonitors() {
-        List<MonitorResponseDto> monitors = monitorService.getAll();
-
-        return ResponseEntity.ok(monitors);
+        return ResponseEntity.ok(monitorService.getAll());
     }
 
     @ApiResponse(responseCode = "200")

@@ -1,5 +1,6 @@
 package com.jmoore.incidentmanagementapi.service;
 
+import com.jmoore.incidentmanagementapi.exception.IncidentNotFoundException;
 import com.jmoore.incidentmanagementapi.exception.MonitorNotFoundException;
 import com.jmoore.incidentmanagementapi.mapper.IncidentMapper;
 import com.jmoore.incidentmanagementapi.model.dto.IncidentResponseDto;
@@ -67,8 +68,15 @@ public class IncidentService {
         }
     }
 
-    public List<IncidentResponseDto> getIncidentsByMonitorId(long monitorId) {
+    public List<IncidentResponseDto> getIncidentsByMonitorId(long monitorId, Boolean openOnly) {
         log.info("Processing get incidents request for monitor ID: {}", monitorId);
+
+        if (Boolean.TRUE.equals(openOnly)) {
+            return incidentRepository.findByMonitorIdAndOpenIncidentTrue(monitorId)
+                    .stream()
+                    .map(mapper::toResponse)
+                    .toList();
+        }
 
         return incidentRepository.findByMonitorId(monitorId)
                 .stream()
@@ -76,19 +84,49 @@ public class IncidentService {
                 .toList();
     }
 
+    @Transactional
     public void resolveLast(long monitorId) {
-        Optional<Incident> incident = incidentRepository.findTopByMonitorIdAndOpenIncidentTrue(monitorId);
+        incidentRepository.findTopByMonitorIdAndOpenIncidentTrue(monitorId).ifPresent(this::resolveIncident);
+    }
 
-        incident.ifPresent(value -> resolveIncident(incident.get()));
+    public List<IncidentResponseDto> getAllIncidents() {
+        log.info("Processing get all incidents request");
+
+        return incidentRepository.findAll()
+                .stream()
+                .map(mapper::toResponse)
+                .toList();
+    }
+
+    public List<IncidentResponseDto> getOpenIncidents() {
+        return incidentRepository.findByOpenIncidentTrue()
+                .stream()
+                .map(mapper::toResponse)
+                .toList();
     }
 
     @Transactional
+    public void resolveIncidentById(long incidentId) {
+        log.info("Processing resolve incident request for ID: {}", incidentId);
+
+        Incident incident = incidentRepository.findById(incidentId)
+                .orElseThrow(() -> new IncidentNotFoundException(incidentId));
+
+        resolveIncident(incident);
+    }
+
+    @Transactional
+    public void deleteIncident(long incidentId) {
+        log.info("Processing delete incident request for ID: {}", incidentId);
+
+        incidentRepository.deleteById(incidentId);
+    }
+
     private void resolveIncident(Incident incident) {
         log.info("Resolving incident for monitor ID: {}", incident.getMonitor().getId());
 
         incident.setOpenIncident(false);
         incident.setResolvedAt(LocalDateTime.now());
-        incidentRepository.save(incident);
     }
 
     private String generateFingerprint(String toEncode) {
