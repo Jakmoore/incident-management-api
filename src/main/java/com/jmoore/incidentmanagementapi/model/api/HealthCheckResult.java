@@ -9,5 +9,6 @@ public record HealthCheckResult(
         Integer expectedStatus,
         Long monitorId,
         String url,
-        String callbackEmail) {
+        String callbackEmail,
+        Long latency) {
 }

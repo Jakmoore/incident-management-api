@@ -85,6 +85,11 @@ public class MonitorService {
     }
 
     // Internal use only endpoints -------------------------------------------
+    @Transactional
+    public void save(Monitor monitor) {
+        monitorRepository.save(monitor);
+    }
+
     public Monitor getEntityById(Long id) {
         return monitorRepository.findById(id).orElseThrow(() -> new MonitorNotFoundException(id));
     }

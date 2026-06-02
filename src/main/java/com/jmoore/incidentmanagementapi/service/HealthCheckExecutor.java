@@ -36,11 +36,14 @@ public class HealthCheckExecutor {
      */
     @Retryable(retryFor = ResourceAccessException.class, backoff = @Backoff(delay = 300))
     public HealthCheckResult executeHealthCheck(Monitor monitor) {
+        long start = System.currentTimeMillis();
+
         ResponseEntity<Void> response = restClient.get()
                 .uri(monitor.getUrl())
                 .exchange((request, clientResponse) ->
                         ResponseEntity.status(clientResponse.getStatusCode()).build());
 
+        long latency = System.currentTimeMillis() - start;
         int statusCode = response.getStatusCode().value();
 
         if (statusCode != monitor.getExpectedStatus()) {
@@ -51,7 +54,8 @@ public class HealthCheckExecutor {
                     monitor.getExpectedStatus(),
                     monitor.getId(),
                     monitor.getUrl(),
-                    monitor.getCallbackEmail());
+                    monitor.getCallbackEmail(),
+                    latency);
         }
 
         log.info("Health check successful for monitor ID: {}", monitor.getId());
@@ -63,7 +67,8 @@ public class HealthCheckExecutor {
                 monitor.getExpectedStatus(),
                 monitor.getId(),
                 monitor.getUrl(),
-                monitor.getCallbackEmail());
+                monitor.getCallbackEmail(),
+                latency);
     }
 
     @Recover
@@ -81,10 +86,12 @@ public class HealthCheckExecutor {
                 monitor.getExpectedStatus(),
                 monitor.getId(),
                 monitor.getUrl(),
-                monitor.getCallbackEmail());
+                monitor.getCallbackEmail(),
+                null);
     }
 
-    private HealthCheckResult result(boolean success, FailureType type, Integer actual, int expected, long monitorId, String url, String callbackEmail) {
+    private HealthCheckResult result(boolean success, FailureType type, Integer actual, int expected,
+                                     long monitorId, String url, String callbackEmail, Long latency) {
         return new HealthCheckResult(
                 success,
                 type,
@@ -92,6 +99,7 @@ public class HealthCheckExecutor {
                 expected,
                 monitorId,
                 url,
-                callbackEmail);
+                callbackEmail,
+                latency);
     }
 }

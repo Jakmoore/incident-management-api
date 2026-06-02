@@ -42,10 +42,26 @@ public class Monitor {
     @Column(name = "callback_email", nullable = false)
     private String callbackEmail;
 
+    @Column(name = "consecutive_failures")
+    private Integer consecutiveFailures;
+
+    @Column(name = "consecutive_successes")
+    private Integer consecutiveSuccesses;
+
     @PrePersist
     public void prePersist() {
         if (createdAt == null) {
             createdAt = LocalDateTime.now();
         }
+    }
+
+    public void recordSuccess() {
+        this.consecutiveFailures = 0;
+        this.consecutiveSuccesses++;
+    }
+
+    public void recordFailure() {
+        this.consecutiveSuccesses = 0;
+        this.consecutiveFailures++;
     }
 }
