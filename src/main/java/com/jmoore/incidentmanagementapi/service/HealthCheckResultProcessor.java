@@ -2,6 +2,7 @@ package com.jmoore.incidentmanagementapi.service;
 
 import com.jmoore.incidentmanagementapi.model.api.HealthCheckResult;
 import com.jmoore.incidentmanagementapi.model.entity.Monitor;
+import com.jmoore.incidentmanagementapi.model.notification.FailureNotification;
 import com.jmoore.incidentmanagementapi.model.notification.Notification;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +31,7 @@ public class HealthCheckResultProcessor {
 
             if (monitor.getConsecutiveSuccesses() >= 3) {
                 incidentService.resolveLast(monitor);
+                raiseResolutionNotification(healthCheckResult);
             }
 
             monitorService.save(monitor);
@@ -44,28 +46,38 @@ public class HealthCheckResultProcessor {
         if (monitor.getConsecutiveFailures() >= 3 && incidentService.getLastOpenIncident(fingerprint).isEmpty()) {
             boolean incidentRaised = incidentService.processIncident(healthCheckResult.monitorId(), healthCheckResult.failureType(), healthCheckResult.actualStatus());
 
-            // Only send notification if an incident was raised. We don't want to send many notifications
-            // for the same issue
+            // Only send notification if an incident was raised. We don't want to send many notifications for the same issue
             if (incidentRaised) {
+                log.warn(
+                        "Healthcheck for monitor {} failed. Raising notification for callback email: {}",
+                        healthCheckResult.url(),
+                        healthCheckResult.callbackEmail()
+                );
+
                 raiseNotification(healthCheckResult);
             }
         }
     }
 
-    private void raiseNotification(HealthCheckResult result) {
-        log.warn(
-                "Healthcheck for monitor {} failed. Raising notification for callback email: {}",
-                result.url(),
-                result.callbackEmail()
-        );
-
-        notificationService.raiseNotification(
+    private void raiseResolutionNotification(HealthCheckResult result) {
+        notificationService.raiseSuccessNotification(
                 new Notification(
-                        result.failureType(),
                         result.url(),
                         result.expectedStatus(),
                         result.actualStatus(),
                         result.callbackEmail()
+                )
+        );
+    }
+
+    private void raiseNotification(HealthCheckResult result) {
+        notificationService.raiseFailureNotifications(
+                new FailureNotification(
+                        result.url(),
+                        result.expectedStatus(),
+                        result.actualStatus(),
+                        result.callbackEmail(),
+                        result.failureType()
                 )
         );
     }

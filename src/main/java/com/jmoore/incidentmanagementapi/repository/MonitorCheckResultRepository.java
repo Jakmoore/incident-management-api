@@ -14,7 +14,7 @@ public interface MonitorCheckResultRepository extends JpaRepository<MonitorCheck
             value = """
                     SELECT
                         COUNT(*) AS totalChecks,
-                        SUM(success) AS successfulChecks,
+                        COUNT(*) FILTER (WHERE success) AS successfulChecks,
                         AVG(latency_ms) AS averageLatencyMs
                     FROM monitor_check_results
                     WHERE monitor_id = :monitorId
