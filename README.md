@@ -146,9 +146,9 @@ Base path: `/api/admin/incidents`
 
 Base path: `/api/metrics/monitors`
 
-| Method | Endpoint                            | Description                                                        |
-|--------|-------------------------------------|--------------------------------------------------------------------|
-| GET    | `/api/metrics/monitors/{monitorId}` | 📊 Retrieve monitor metrics (query param: `cutoff`, default `30d`) |
+| Method | Endpoint                            | Description                                                                                   |
+|--------|-------------------------------------|-----------------------------------------------------------------------------------------------|
+| GET    | `/api/metrics/monitors/{monitorId}` | 📊 Retrieve monitor metrics (query param: `cutoffDate`, default `today`, format `2025-11-03`) |
 
 Metrics are derived from historical check results stored in PostgreSQL and aggregated through a service layer.
 

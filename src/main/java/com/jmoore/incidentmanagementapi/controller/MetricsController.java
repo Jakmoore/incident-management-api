@@ -1,6 +1,5 @@
 package com.jmoore.incidentmanagementapi.controller;
 
-import com.jmoore.incidentmanagementapi.model.dto.CutoffDto;
 import com.jmoore.incidentmanagementapi.model.dto.MetricsResponseDto;
 import com.jmoore.incidentmanagementapi.service.MonitorCheckResultService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -11,6 +10,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Slf4j
 @RestController
@@ -24,9 +26,9 @@ public class MetricsController {
     @ApiResponse(responseCode = "200")
     @Operation(summary = "Get metrics for monitor ID")
     @GetMapping(value = "/{monitorId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<MetricsResponseDto> getMonitorMetrics(@PathVariable long monitorId, @RequestParam(defaultValue = "30d") String cutoff) {
-        CutoffDto cutoffDto = CutoffDto.from(cutoff);
+    public ResponseEntity<MetricsResponseDto> getMonitorMetrics(@PathVariable long monitorId, @RequestParam(required = false) LocalDate cutoffDate) {
+        LocalDateTime cutoffDateTime = cutoffDate == null ? LocalDateTime.now() : cutoffDate.plusDays(1).atStartOfDay();
 
-        return ResponseEntity.ok(monitorCheckResultService.getMetrics(monitorId, cutoffDto));
+        return ResponseEntity.ok(monitorCheckResultService.getMetrics(monitorId, cutoffDateTime));
     }
 }

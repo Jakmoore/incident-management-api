@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
+
 @Repository
 public interface MonitorCheckResultRepository extends JpaRepository<MonitorCheckResult, Long> {
 
@@ -18,8 +20,9 @@ public interface MonitorCheckResultRepository extends JpaRepository<MonitorCheck
                         AVG(latency_ms) AS averageLatencyMs
                     FROM monitor_check_results
                     WHERE monitor_id = :monitorId
+                    AND created_at < :cutoff
                     """,
             nativeQuery = true
     )
-    MonitorMetricsPartial getMetrics(@Param("monitorId") long monitorId, @Param("cutoff") String cutoff);
+    MonitorMetricsPartial getMetrics(@Param("monitorId") long monitorId, @Param("cutoff") LocalDateTime cutoffDateTime);
 }

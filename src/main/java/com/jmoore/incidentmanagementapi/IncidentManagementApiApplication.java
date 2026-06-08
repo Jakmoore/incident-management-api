@@ -17,5 +17,4 @@ public class IncidentManagementApiApplication {
     public static void main(String[] args) {
         SpringApplication.run(IncidentManagementApiApplication.class, args);
     }
-
 }

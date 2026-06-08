@@ -1,7 +1,6 @@
 package com.jmoore.incidentmanagementapi.service;
 
 import com.jmoore.incidentmanagementapi.model.api.HealthCheckResult;
-import com.jmoore.incidentmanagementapi.model.dto.CutoffDto;
 import com.jmoore.incidentmanagementapi.model.dto.MetricsResponseDto;
 import com.jmoore.incidentmanagementapi.model.entity.Monitor;
 import com.jmoore.incidentmanagementapi.model.entity.MonitorCheckResult;
@@ -11,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
 
 @Slf4j
 @Service
@@ -33,8 +34,8 @@ public class MonitorCheckResultService {
         resultRepository.save(monitorCheckResult);
     }
 
-    public MetricsResponseDto getMetrics(long monitorId, CutoffDto cutoff) {
-        MonitorMetricsPartial partial = resultRepository.getMetrics(monitorId, cutoff.getValue());
+    public MetricsResponseDto getMetrics(long monitorId, LocalDateTime cutoffDateTime) {
+        MonitorMetricsPartial partial = resultRepository.getMetrics(monitorId, cutoffDateTime);
 
         return MetricsResponseDto.builder()
                 .monitorId(monitorId)

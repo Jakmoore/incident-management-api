@@ -1,6 +1,7 @@
 package com.jmoore.incidentmanagementapi.service;
 
 import com.jmoore.incidentmanagementapi.model.api.HealthCheckResult;
+import com.jmoore.incidentmanagementapi.model.entity.Incident;
 import com.jmoore.incidentmanagementapi.model.entity.Monitor;
 import com.jmoore.incidentmanagementapi.model.notification.FailureNotification;
 import com.jmoore.incidentmanagementapi.model.notification.Notification;
@@ -8,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -30,7 +33,9 @@ public class HealthCheckResultProcessor {
             monitor.recordSuccess();
 
             if (monitor.getConsecutiveSuccesses() >= 3) {
-                incidentService.resolveLast(monitor);
+                String fingerprint = fingerprintGenerator.generate(monitor.getId() + monitor.getUrl() + healthCheckResult.failureType().name() + monitor.getCallbackEmail());
+                Optional<Incident> incident = incidentService.getLastOpenIncidentByFingerprint(fingerprint);
+                incident.ifPresent(incidentService::resolveIncident);
                 raiseResolutionNotification(healthCheckResult);
             }
 
@@ -40,10 +45,7 @@ public class HealthCheckResultProcessor {
 
         monitor.recordFailure();
 
-        String fingerprint = fingerprintGenerator.generate(
-                monitor.getId() + monitor.getUrl() + healthCheckResult.failureType().name() + monitor.getCallbackEmail());
-
-        if (monitor.getConsecutiveFailures() >= 3 && incidentService.getLastOpenIncident(fingerprint).isEmpty()) {
+        if (monitor.getConsecutiveFailures() >= 3) {
             boolean incidentRaised = incidentService.processIncident(healthCheckResult.monitorId(), healthCheckResult.failureType(), healthCheckResult.actualStatus());
 
             // Only send notification if an incident was raised. We don't want to send many notifications for the same issue
@@ -54,7 +56,7 @@ public class HealthCheckResultProcessor {
                         healthCheckResult.callbackEmail()
                 );
 
-                raiseNotification(healthCheckResult);
+                raiseFailureNotification(healthCheckResult);
             }
         }
     }
@@ -70,7 +72,7 @@ public class HealthCheckResultProcessor {
         );
     }
 
-    private void raiseNotification(HealthCheckResult result) {
+    private void raiseFailureNotification(HealthCheckResult result) {
         notificationService.raiseFailureNotifications(
                 new FailureNotification(
                         result.url(),

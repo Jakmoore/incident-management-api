@@ -46,7 +46,7 @@ public class IncidentService {
         String fingerprint = fingerprintGenerator.generate(
                 monitorId + monitor.getUrl() + failureType.name() + monitor.getCallbackEmail());
 
-        Optional<Incident> openIncident = getLastOpenIncident(fingerprint);
+        Optional<Incident> openIncident = getLastOpenIncidentByFingerprint(fingerprint);
 
         if (openIncident.isEmpty()) {
             Incident incident = Incident.builder()
@@ -85,11 +85,6 @@ public class IncidentService {
                 .toList();
     }
 
-    @Transactional
-    public void resolveLast(Monitor monitor) {
-        incidentRepository.findTopByMonitorIdAndOpenIncidentTrue(monitor.getId()).ifPresent(this::resolveIncident);
-    }
-
     public List<IncidentResponseDto> getAllIncidents() {
         log.info("Processing get all incidents request");
 
@@ -117,24 +112,25 @@ public class IncidentService {
     }
 
     @Transactional
+    public void resolveIncident(Incident incident) {
+        log.info("Resolving incident for monitor ID: {}", incident.getMonitor().getId());
+
+        incident.setOpenIncident(false);
+        incident.setResolvedAt(LocalDateTime.now());
+    }
+
+    @Transactional
     public void deleteIncident(long incidentId) {
         log.info("Processing delete incident request for ID: {}", incidentId);
 
         incidentRepository.deleteById(incidentId);
     }
 
-    public Optional<Incident> getLastOpenIncident(String fingerprint) {
+    public Optional<Incident> getLastOpenIncidentByFingerprint(String fingerprint) {
         return incidentRepository.findTopByFingerprintAndOpenIncidentTrueOrderByCreatedAtDesc(fingerprint);
     }
 
     public long getOpenIncidentCount(long monitorId) {
         return incidentRepository.countByMonitorIdAndOpenIncidentTrue(monitorId);
-    }
-
-    private void resolveIncident(Incident incident) {
-        log.info("Resolving incident for monitor ID: {}", incident.getMonitor().getId());
-
-        incident.setOpenIncident(false);
-        incident.setResolvedAt(LocalDateTime.now());
     }
 }

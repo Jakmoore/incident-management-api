@@ -13,12 +13,13 @@ public class GlobalExceptionHandler {
         return ResponseEntity.internalServerError().build();
     }
 
-    @ExceptionHandler(exception = {
-            MonitorNotFoundException.class,
-            IncidentNotFoundException.class,
-            InvalidCutoffException.class}
-    )
+    @ExceptionHandler(exception = {MonitorNotFoundException.class, IncidentNotFoundException.class})
     public ResponseEntity<ApiErrorResponse> handleMonitorNotFound(RuntimeException ex) {
         return ResponseEntity.status(404).body(new ApiErrorResponse(ex.getMessage()));
+    }
+
+    @ExceptionHandler(InvalidCutoffException.class)
+    public ResponseEntity<ApiErrorResponse> handleInvalidCutoffException(InvalidCutoffException ex) {
+        return ResponseEntity.badRequest().body(new ApiErrorResponse(ex.getMessage()));
     }
 }
