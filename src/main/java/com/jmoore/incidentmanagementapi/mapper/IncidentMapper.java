@@ -1,7 +1,7 @@
 package com.jmoore.incidentmanagementapi.mapper;
 
-import com.jmoore.incidentmanagementapi.model.dto.IncidentResponseDto;
-import com.jmoore.incidentmanagementapi.model.entity.Incident;
+import com.jmoore.incidentmanagementapi.model.dto.incident.IncidentResponseDto;
+import com.jmoore.incidentmanagementapi.model.entity.incident.Incident;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingConstants;
 

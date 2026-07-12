@@ -1,7 +1,7 @@
 package com.jmoore.incidentmanagementapi.repository;
 
-import com.jmoore.incidentmanagementapi.model.entity.MonitorCheckResult;
-import com.jmoore.incidentmanagementapi.model.entity.MonitorMetricsPartial;
+import com.jmoore.incidentmanagementapi.model.entity.monitor.MonitorCheckResult;
+import com.jmoore.incidentmanagementapi.model.entity.metrics.MonitorMetricsPartial;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

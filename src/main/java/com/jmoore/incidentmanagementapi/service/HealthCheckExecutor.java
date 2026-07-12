@@ -1,7 +1,7 @@
 package com.jmoore.incidentmanagementapi.service;
 
 import com.jmoore.incidentmanagementapi.model.api.HealthCheckResult;
-import com.jmoore.incidentmanagementapi.model.entity.Monitor;
+import com.jmoore.incidentmanagementapi.model.entity.monitor.Monitor;
 import com.jmoore.incidentmanagementapi.model.notification.FailureType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -50,6 +50,18 @@ public class HealthCheckExecutor {
             return result(
                     false,
                     FailureType.HTTP_STATUS_ERROR,
+                    statusCode,
+                    monitor.getExpectedStatus(),
+                    monitor.getId(),
+                    monitor.getUrl(),
+                    monitor.getCallbackEmail(),
+                    latency);
+        }
+
+        if (latency > monitor.getExpectedLatency()) {
+            return result(
+                    false,
+                    FailureType.HIGH_LATENCY_ERROR,
                     statusCode,
                     monitor.getExpectedStatus(),
                     monitor.getId(),

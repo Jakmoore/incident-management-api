@@ -1,5 +1,6 @@
-package com.jmoore.incidentmanagementapi.model.entity;
+package com.jmoore.incidentmanagementapi.model.entity.incident;
 
+import com.jmoore.incidentmanagementapi.model.entity.monitor.Monitor;
 import jakarta.persistence.*;
 import lombok.*;
 

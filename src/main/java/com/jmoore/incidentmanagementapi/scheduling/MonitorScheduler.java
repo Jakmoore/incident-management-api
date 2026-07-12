@@ -1,6 +1,6 @@
 package com.jmoore.incidentmanagementapi.scheduling;
 
-import com.jmoore.incidentmanagementapi.model.entity.Monitor;
+import com.jmoore.incidentmanagementapi.model.entity.monitor.Monitor;
 import com.jmoore.incidentmanagementapi.repository.MonitorRepository;
 import com.jmoore.incidentmanagementapi.service.MonitorExecutorService;
 import lombok.RequiredArgsConstructor;

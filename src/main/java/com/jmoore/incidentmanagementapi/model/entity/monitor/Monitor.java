@@ -1,9 +1,10 @@
-package com.jmoore.incidentmanagementapi.model.entity;
+package com.jmoore.incidentmanagementapi.model.entity.monitor;
 
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Getter
@@ -43,10 +44,23 @@ public class Monitor {
     private String callbackEmail;
 
     @Column(name = "consecutive_failures")
-    private Integer consecutiveFailures;
+    private Integer consecutiveFailures = 0;
 
     @Column(name = "consecutive_successes")
-    private Integer consecutiveSuccesses;
+    private Integer consecutiveSuccesses = 0;
+
+    @Column(name = "tags")
+    private List<String> tags;
+
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "start", column = @Column(name = "maintenance_start")),
+            @AttributeOverride(name = "end", column = @Column(name = "maintenance_end"))
+    })
+    private MaintenanceWindow maintenanceWindow;
+
+    @Column(name = "expected_latency")
+    private Long expectedLatency;
 
     @PrePersist
     public void prePersist() {

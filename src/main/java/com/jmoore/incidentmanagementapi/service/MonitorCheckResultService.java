@@ -1,10 +1,10 @@
 package com.jmoore.incidentmanagementapi.service;
 
 import com.jmoore.incidentmanagementapi.model.api.HealthCheckResult;
-import com.jmoore.incidentmanagementapi.model.dto.MetricsResponseDto;
-import com.jmoore.incidentmanagementapi.model.entity.Monitor;
-import com.jmoore.incidentmanagementapi.model.entity.MonitorCheckResult;
-import com.jmoore.incidentmanagementapi.model.entity.MonitorMetricsPartial;
+import com.jmoore.incidentmanagementapi.model.dto.metrics.MetricsResponseDto;
+import com.jmoore.incidentmanagementapi.model.entity.monitor.Monitor;
+import com.jmoore.incidentmanagementapi.model.entity.monitor.MonitorCheckResult;
+import com.jmoore.incidentmanagementapi.model.entity.metrics.MonitorMetricsPartial;
 import com.jmoore.incidentmanagementapi.repository.MonitorCheckResultRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

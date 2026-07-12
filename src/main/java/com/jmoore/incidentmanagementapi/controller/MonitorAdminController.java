@@ -1,7 +1,8 @@
 package com.jmoore.incidentmanagementapi.controller;
 
-import com.jmoore.incidentmanagementapi.model.dto.MonitorRequestDto;
-import com.jmoore.incidentmanagementapi.model.dto.MonitorResponseDto;
+import com.jmoore.incidentmanagementapi.model.dto.monitor.MonitorRequestDto;
+import com.jmoore.incidentmanagementapi.model.dto.monitor.MonitorResponseDto;
+import com.jmoore.incidentmanagementapi.model.entity.monitor.MaintenanceWindow;
 import com.jmoore.incidentmanagementapi.service.MonitorService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -33,8 +34,8 @@ public class MonitorAdminController {
     @ApiResponse(responseCode = "200")
     @Operation(summary = "Get all monitors")
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<MonitorResponseDto>> getAllMonitors() {
-        return ResponseEntity.ok(monitorService.getAll());
+    public ResponseEntity<List<MonitorResponseDto>> getAllMonitors(@RequestParam(required = false) List<String> tags) {
+        return ResponseEntity.ok(monitorService.getAll(tags));
     }
 
     @ApiResponse(responseCode = "200")
@@ -72,5 +73,19 @@ public class MonitorAdminController {
         monitorService.deleteMonitor(id);
 
         return ResponseEntity.noContent().build();
+    }
+
+    @ApiResponse(responseCode = "200")
+    @Operation(summary = "Activate Maintenance Window")
+    @PostMapping(value = "/{id}/maintenance", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<MonitorResponseDto> activateMaintenanceWindow(@PathVariable Long id, @RequestBody MaintenanceWindow maintenanceWindow) {
+        return ResponseEntity.ok(monitorService.activateMaintenanceWindow(id, maintenanceWindow));
+    }
+
+    @ApiResponse(responseCode = "200")
+    @Operation(summary = "Deactivate Maintenance Window")
+    @DeleteMapping(value = "/{id}/maintenance", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<MonitorResponseDto> deactivateMaintenanceWindow(@PathVariable Long id) {
+        return ResponseEntity.ok(monitorService.deactivateMaintenanceWindow(id));
     }
 }

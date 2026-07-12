@@ -4,84 +4,122 @@
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-brightgreen)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Database-blue)
 
-A backend system for monitoring external services, running automated health checks, and tracking failures through
-structured incident reporting.
-
-It provides both scheduled and manual execution of checks, with automatic detection and logging of service degradation
-or outages.
+A backend monitoring system for tracking external services through automated and on-demand health checks. The
+application detects service degradation, records incidents, provides historical availability metrics, and supports
+planned maintenance windows to suppress expected outages.
 
 ---
 
-## ✨ Features
+# ✨ Features
 
-### 📡 Monitor Management
+## 📡 Monitor Management
 
-Users can define and manage monitors that represent external services to be tracked.
+Users can define and manage monitors representing external services.
 
-Each monitor includes:
+Each monitor supports:
 
-- 🏷️ Name
-- 🌐 Target URL
-- 🎯 Expected HTTP status code
-- ⏱️ Check interval (seconds)
-- 📧 Callback email notifications
-- 🔄 Active / inactive state
+* 🏷️ Name
+* 🌐 Target URL
+* 🎯 Expected HTTP status code
+* ⏱️ Check interval (seconds)
+* 📧 Callback email
+* 🏷️ Optional tag for grouping and filtering
+* 🚧 Maintenance window scheduling
+* 🔢 Configurable consecutive failure threshold
+* 🔄 Active / inactive state
 
-Monitors are persisted using a relational database with Spring Data JPA.
-
----
-
-### ⚙️ Automated Health Checks
-
-A background scheduler continuously evaluates which monitors are due for execution.
-
-This subsystem uses Spring Scheduling for orchestration and Spring Async for parallel execution, allowing high
-throughput without blocking.
-
-Each check:
-
-- 🌍 Sends HTTP GET requests to external services
-- ✅ Validates responses against expected status codes
-- 🔁 Retries transient failures using Spring Retry
-- ⚡ Runs concurrently for scalability
-- 🐘 Stores results in PostgreSQL via JPA
+Monitors are persisted in PostgreSQL using Spring Data JPA.
 
 ---
 
-### 🧪 Manual Health Checks
+## ⚙️ Automated Health Checks
 
-Provides an on-demand endpoint for executing a monitor instantly.
+A background scheduler continuously evaluates monitors that are due for execution.
 
-This uses the same internal service layer as the scheduler to ensure consistent behaviour between manual and automated
-execution paths.
+The monitoring pipeline leverages:
 
----
+* Spring Scheduling
+* Spring Async
+* Spring Retry
 
-### 🚨 Incident Logging
+Each execution:
 
-When a failure is detected, the system automatically creates an incident record.
-
-Failures include:
-
-- ❌ Unexpected HTTP status codes
-- ⏳ Timeout or connection failures after retries
-
-Each incident contains:
-
-- 🔗 Monitor reference
-- 🌐 Target URL
-- ⚠️ Failure type
-- 🎯 Expected status code
-- 📉 Actual status code (if available)
-- 🕒 Timestamp
-- 🧬 Fingerprint for deduplication
-- 🔓 Open / resolved state
-
-Incident data is persisted in PostgreSQL via Spring Data JPA with transactional guarantees.
+* 🌍 Sends an HTTP GET request
+* ✅ Validates the returned HTTP status code
+* 🔁 Retries transient failures
+* ⚡ Executes checks concurrently
+* 📊 Records health check results
+* 🐘 Persists data using Spring Data JPA
 
 ---
 
-## 📡 API Endpoints
+## 🧪 Manual Health Checks
+
+Health checks can also be executed on demand through a dedicated endpoint.
+
+Manual executions reuse the exact same service layer as scheduled checks, ensuring consistent retry, validation,
+incident creation and metrics collection.
+
+---
+
+## 🚧 Maintenance Windows
+
+Monitors can be placed into a scheduled maintenance window.
+
+During an active maintenance window:
+
+* 🚧 Health checks continue to execute
+* 🚫 Incident creation is suppressed
+* 📊 Metrics continue to be collected
+* 🕒 Maintenance can be activated or removed independently of monitor configuration
+
+---
+
+## 🚨 Incident Management
+
+When a monitor exceeds its configured consecutive failure threshold outside an active maintenance window, an incident is
+automatically created.
+
+Detected failures include:
+
+* ❌ Unexpected HTTP status codes
+* ⏳ Connection failures
+* 🌐 Request timeouts after retry attempts
+
+Each incident records:
+
+* 🔗 Monitor reference
+* 🌐 Target URL
+* ⚠️ Incident type
+* 🎯 Expected HTTP status
+* 📉 Actual HTTP status (when available)
+* 📝 Failure reason
+* 📧 Callback email
+* 🧬 Fingerprint for duplicate detection
+* 🕒 Created timestamp
+* 🔓 Open / resolved state
+
+Duplicate incidents are automatically detected using fingerprinting to prevent multiple open incidents representing the
+same underlying failure.
+
+---
+
+## 📈 Metrics
+
+Historical health check results are aggregated into monitor metrics including:
+
+* 📊 Total health checks
+* ✅ Successful checks
+* ❌ Failed checks
+* 📈 Uptime percentage
+* ⚡ Average response latency
+* 🚨 Open incident count
+
+Metrics can be queried for any reporting period using an optional cutoff date.
+
+---
+
+# 📡 API Endpoints
 
 ---
 
@@ -89,18 +127,27 @@ Incident data is persisted in PostgreSQL via Spring Data JPA with transactional 
 
 Base path: `/api/admin/monitors`
 
-| Method | Endpoint                           | Description                  |
-|--------|------------------------------------|------------------------------|
-| POST   | `/api/admin/monitors`              | ➕ Create a new monitor       |
-| GET    | `/api/admin/monitors`              | 📋 Retrieve all monitors     |
-| GET    | `/api/admin/monitors/{id}`         | 🔍 Retrieve monitor by ID    |
-| PUT    | `/api/admin/monitors/{id}`         | ✏️ Update monitor config     |
-| PATCH  | `/api/admin/monitors/{id}/enable`  | 🟢 Enable monitor            |
-| PATCH  | `/api/admin/monitors/{id}/disable` | 🔴 Disable monitor           |
-| DELETE | `/api/admin/monitors/{id}`         | 🗑️ Delete monitor           |
-| POST   | `/api/admin/monitors/run-all`      | 🚀 Trigger all active checks |
+| Method | Endpoint                           | Description                                      |
+|--------|------------------------------------|--------------------------------------------------|
+| POST   | `/api/admin/monitors`              | ➕ Create a new monitor                           |
+| GET    | `/api/admin/monitors`              | 📋 Retrieve all monitors (optional `tag` filter) |
+| GET    | `/api/admin/monitors/{id}`         | 🔍 Retrieve monitor by ID                        |
+| PUT    | `/api/admin/monitors/{id}`         | ✏️ Update monitor configuration                  |
+| PATCH  | `/api/admin/monitors/{id}/enable`  | 🟢 Enable monitor                                |
+| PATCH  | `/api/admin/monitors/{id}/disable` | 🔴 Disable monitor                               |
+| POST   | `/api/admin/monitors/run-all`      | 🚀 Execute health checks for all active monitors |
+| DELETE | `/api/admin/monitors/{id}`         | 🗑️ Delete monitor                               |
 
-All operations are handled through a Spring Boot service layer backed by JPA persistence.
+---
+
+## 🚧 Maintenance Window Management
+
+Base path: `/api/admin/monitors`
+
+| Method | Endpoint                               | Description                                  |
+|--------|----------------------------------------|----------------------------------------------|
+| POST   | `/api/admin/monitors/{id}/maintenance` | 🚧 Schedule or activate a maintenance window |
+| DELETE | `/api/admin/monitors/{id}/maintenance` | ✅ Remove the active maintenance window       |
 
 ---
 
@@ -108,11 +155,9 @@ All operations are handled through a Spring Boot service layer backed by JPA per
 
 Base path: `/api/monitors`
 
-| Method | Endpoint                    | Description               |
-|--------|-----------------------------|---------------------------|
-| GET    | `/api/monitors/{monitorId}` | ⚡ Run manual health check |
-
-This endpoint executes the same internal service logic used by scheduled jobs.
+| Method | Endpoint                    | Description                         |
+|--------|-----------------------------|-------------------------------------|
+| GET    | `/api/monitors/{monitorId}` | ⚡ Execute an on-demand health check |
 
 ---
 
@@ -120,12 +165,10 @@ This endpoint executes the same internal service logic used by scheduled jobs.
 
 Base path: `/api/incidents`
 
-| Method | Endpoint                                   | Description                        |
-|--------|--------------------------------------------|------------------------------------|
-| GET    | `/api/incidents/{monitorId}`               | 📊 Get all incidents for a monitor |
-| GET    | `/api/incidents/{monitorId}?openOnly=true` | 🔓 Get only open incidents         |
-
-Incidents are stored in PostgreSQL and accessed via Spring Data JPA repositories.
+| Method | Endpoint                                   | Description                         |
+|--------|--------------------------------------------|-------------------------------------|
+| GET    | `/api/incidents/{monitorId}`               | 📊 Retrieve incidents for a monitor |
+| GET    | `/api/incidents/{monitorId}?openOnly=true` | 🔓 Retrieve only open incidents     |
 
 ---
 
@@ -133,12 +176,12 @@ Incidents are stored in PostgreSQL and accessed via Spring Data JPA repositories
 
 Base path: `/api/admin/incidents`
 
-| Method | Endpoint                            | Description                 |
-|--------|-------------------------------------|-----------------------------|
-| GET    | `/api/admin/incidents`              | 📋 Retrieve all incidents   |
-| GET    | `/api/admin/incidents/open`         | 🔓 Retrieve open incidents  |
-| PATCH  | `/api/admin/incidents/{id}/resolve` | ✅ Resolve incident manually |
-| DELETE | `/api/admin/incidents/{id}`         | 🗑️ Delete incident         |
+| Method | Endpoint                                    | Description                    |
+|--------|---------------------------------------------|--------------------------------|
+| GET    | `/api/admin/incidents`                      | 📋 Retrieve all incidents      |
+| GET    | `/api/admin/incidents/open`                 | 🔓 Retrieve all open incidents |
+| PATCH  | `/api/admin/incidents/{incidentId}/resolve` | ✅ Resolve an incident          |
+| DELETE | `/api/admin/incidents/{incidentId}`         | 🗑️ Delete an incident         |
 
 ---
 
@@ -146,27 +189,43 @@ Base path: `/api/admin/incidents`
 
 Base path: `/api/metrics/monitors`
 
-| Method | Endpoint                            | Description                                                                                   |
-|--------|-------------------------------------|-----------------------------------------------------------------------------------------------|
-| GET    | `/api/metrics/monitors/{monitorId}` | 📊 Retrieve monitor metrics (query param: `cutoffDate`, default `today`, format `2025-11-03`) |
+| Method | Endpoint                            | Description                                                              |
+|--------|-------------------------------------|--------------------------------------------------------------------------|
+| GET    | `/api/metrics/monitors/{monitorId}` | 📊 Retrieve monitor metrics (`cutoffDate` optional, format `YYYY-MM-DD`) |
 
-Metrics are derived from historical check results stored in PostgreSQL and aggregated through a service layer.
+Metrics are calculated from persisted health check history.
 
 ---
 
-## 🧠 Architecture Overview
+# 🛠 Technology Stack
 
-```text
-🕒 Scheduler triggers execution cycle
-   ↓
-📥 JPA fetches due monitors
-   ↓
-⚡ Async workers execute checks in parallel
-   ↓
-🌐 HTTP requests sent to external services
-   ↓
-🔁 Retry layer handles transient failures
-   ↓
-📊 Results aggregated into metrics
-   ↓
-🚨 Incidents created and persisted in PostgreSQL
+* ☕ Java 21
+* 🌱 Spring Boot 3.x
+* 🐘 PostgreSQL
+* 🗄️ Spring Data JPA
+* ⏰ Spring Scheduling
+* ⚡ Spring Async
+* 🔁 Spring Retry
+* 🗺️ MapStruct
+* ✅ Jakarta Bean Validation
+* 📖 OpenAPI / Swagger
+
+---
+
+# 🧠 Architecture Overview
+
+```mermaid
+flowchart TD
+    A["🕒 Scheduler"] --> B["📥 Load Due Monitors"]
+    B --> C["⚡ Async Health Checks"]
+    C --> D["🌐 HTTP Request"]
+    D --> E["🔁 Retry Failed Requests"]
+    E --> F{"🚧 Maintenance Window?"}
+    F -- Yes --> G["📊 Persist Check Result"]
+    F -- No --> H{"Failure Threshold Reached?"}
+    H -- No --> G
+    H -- Yes --> I["🚨 Create / Update Incident"]
+    G --> J["📈 Update Metrics"]
+    I --> J
+    J --> K["🐘 PostgreSQL"]
+```

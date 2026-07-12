@@ -1,7 +1,7 @@
 package com.jmoore.incidentmanagementapi.service;
 
 import com.jmoore.incidentmanagementapi.model.api.HealthCheckResult;
-import com.jmoore.incidentmanagementapi.model.entity.Monitor;
+import com.jmoore.incidentmanagementapi.model.entity.monitor.Monitor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;

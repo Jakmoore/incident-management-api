@@ -2,9 +2,9 @@ package com.jmoore.incidentmanagementapi.service;
 
 import com.jmoore.incidentmanagementapi.exception.IncidentNotFoundException;
 import com.jmoore.incidentmanagementapi.mapper.IncidentMapper;
-import com.jmoore.incidentmanagementapi.model.dto.IncidentResponseDto;
-import com.jmoore.incidentmanagementapi.model.entity.Incident;
-import com.jmoore.incidentmanagementapi.model.entity.Monitor;
+import com.jmoore.incidentmanagementapi.model.dto.incident.IncidentResponseDto;
+import com.jmoore.incidentmanagementapi.model.entity.incident.Incident;
+import com.jmoore.incidentmanagementapi.model.entity.monitor.Monitor;
 import com.jmoore.incidentmanagementapi.model.notification.FailureType;
 import com.jmoore.incidentmanagementapi.repository.IncidentRepository;
 import lombok.RequiredArgsConstructor;

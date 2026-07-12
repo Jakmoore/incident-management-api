@@ -1,6 +1,6 @@
 package com.jmoore.incidentmanagementapi.controller;
 
-import com.jmoore.incidentmanagementapi.model.dto.MetricsResponseDto;
+import com.jmoore.incidentmanagementapi.model.dto.metrics.MetricsResponseDto;
 import com.jmoore.incidentmanagementapi.service.MonitorCheckResultService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
