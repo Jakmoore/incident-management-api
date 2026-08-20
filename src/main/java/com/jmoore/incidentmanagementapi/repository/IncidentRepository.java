@@ -10,15 +10,11 @@ import java.util.Optional;
 @Repository
 public interface IncidentRepository extends JpaRepository<Incident, Long> {
 
-    List<Incident> findByMonitorId(long monitorId);
+    List<Incident> findByMonitor_ClientId(String clientId);
 
-    List<Incident> findByMonitorIdAndOpenIncidentTrue(long monitorId);
-
-    List<Incident> findByOpenIncidentTrue();
+    List<Incident> findByMonitor_ClientIdAndMonitor_Id(String clientId, Long monitorId);
 
     Optional<Incident> findTopByFingerprintAndOpenIncidentTrueOrderByCreatedAtDesc(String fingerprint);
 
-    Optional<Incident> findTopByMonitorIdAndOpenIncidentTrue(long monitorId);
-
-    long countByMonitorIdAndOpenIncidentTrue(long monitorId);
+    long countByMonitorIdAndOpenIncidentTrue(Long monitorId);
 }

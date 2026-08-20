@@ -2,9 +2,10 @@ package com.jmoore.incidentmanagementapi.model.entity.monitor;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Entity
 @Getter
@@ -49,8 +50,12 @@ public class Monitor {
     @Column(name = "consecutive_successes")
     private Integer consecutiveSuccesses = 0;
 
-    @Column(name = "tags")
-    private List<String> tags;
+    @Column(name = "tags", columnDefinition = "text[]")
+    @JdbcTypeCode(SqlTypes.ARRAY)
+    private String[] tags;
+
+    @Column(name = "client_id")
+    private String clientId;
 
     @Embedded
     @AttributeOverrides({

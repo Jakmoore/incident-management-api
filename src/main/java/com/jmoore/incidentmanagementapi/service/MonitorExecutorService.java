@@ -23,6 +23,6 @@ public class MonitorExecutorService {
     public void runMonitor(Monitor monitor) {
         HealthCheckResult result = healthCheckExecutor.executeHealthCheck(monitor);
         resultProcessor.process(result);
-        monitorService.updateNextRunAt(monitor);
+        monitorService.updateNextRunAt(monitor.getId());
     }
 }

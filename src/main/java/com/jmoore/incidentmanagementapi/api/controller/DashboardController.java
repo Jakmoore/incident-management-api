@@ -1,4 +1,4 @@
-package com.jmoore.incidentmanagementapi.controller;
+package com.jmoore.incidentmanagementapi.api.controller;
 
 import com.jmoore.incidentmanagementapi.model.dto.dashboard.DashboardResponseDto;
 import com.jmoore.incidentmanagementapi.service.DashboardService;
@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -25,7 +26,7 @@ public class DashboardController {
     @ApiResponse(responseCode = "200")
     @Operation(summary = "Get Dashboard Information")
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<DashboardResponseDto> getDashboardInformation() {
-        return ResponseEntity.ok(dashboardService.getDashboardInformation());
+    public ResponseEntity<DashboardResponseDto> getDashboardInformation(@RequestHeader("clientId") String clientId) {
+        return ResponseEntity.ok(dashboardService.getDashboardInformation(clientId));
     }
 }

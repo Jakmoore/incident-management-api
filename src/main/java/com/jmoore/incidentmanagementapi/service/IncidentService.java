@@ -69,42 +69,23 @@ public class IncidentService {
         return false;
     }
 
-    public List<IncidentResponseDto> getIncidentsByMonitorId(long monitorId, Boolean openOnly) {
-        log.info("Processing get incidents request for monitor ID: {}", monitorId);
+    public List<IncidentResponseDto> getIncidentsFiltered(Long monitorId, Boolean openOnly, String clientId) {
+        List<Incident> incidents = monitorId == null ?
+                incidentRepository.findByMonitor_ClientId(clientId) :
+                incidentRepository.findByMonitor_ClientIdAndMonitor_Id(clientId, monitorId);
 
         if (Boolean.TRUE.equals(openOnly)) {
-            return incidentRepository.findByMonitorIdAndOpenIncidentTrue(monitorId)
-                    .stream()
-                    .map(mapper::toResponse)
-                    .toList();
+            incidents = incidents.stream()
+                    .filter(Incident::getOpenIncident).toList();
         }
 
-        return incidentRepository.findByMonitorId(monitorId)
-                .stream()
-                .map(mapper::toResponse)
-                .toList();
-    }
-
-    public List<IncidentResponseDto> getAllIncidents() {
-        log.info("Processing get all incidents request");
-
-        return incidentRepository.findAll()
-                .stream()
-                .map(mapper::toResponse)
-                .toList();
-    }
-
-    public List<IncidentResponseDto> getOpenIncidents() {
-        return incidentRepository.findByOpenIncidentTrue()
-                .stream()
+        return incidents.stream()
                 .map(mapper::toResponse)
                 .toList();
     }
 
     @Transactional
-    public void resolveIncidentById(long incidentId) {
-        log.info("Processing resolve incident request for ID: {}", incidentId);
-
+    public void resolveIncidentById(Long incidentId) {
         Incident incident = incidentRepository.findById(incidentId)
                 .orElseThrow(() -> new IncidentNotFoundException(incidentId));
 
@@ -120,9 +101,7 @@ public class IncidentService {
     }
 
     @Transactional
-    public void deleteIncident(long incidentId) {
-        log.info("Processing delete incident request for ID: {}", incidentId);
-
+    public void deleteIncident(Long incidentId) {
         incidentRepository.deleteById(incidentId);
     }
 
@@ -130,7 +109,7 @@ public class IncidentService {
         return incidentRepository.findTopByFingerprintAndOpenIncidentTrueOrderByCreatedAtDesc(fingerprint);
     }
 
-    public long getOpenIncidentCount(long monitorId) {
+    public Long getOpenIncidentCount(Long monitorId) {
         return incidentRepository.countByMonitorIdAndOpenIncidentTrue(monitorId);
     }
 }

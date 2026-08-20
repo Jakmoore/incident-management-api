@@ -1,12 +1,9 @@
 # 🚨 Incident Management API
 
-![Java](https://img.shields.io/badge/Java-21-red)
-![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-brightgreen)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Database-blue)
+A Spring Boot monitoring and incident management API for tracking the availability and performance of external services.
 
-A backend monitoring system for tracking external services through automated and on-demand health checks. The
-application detects service degradation, records incidents, provides historical availability metrics, and supports
-planned maintenance windows to suppress expected outages.
+The application provides configurable service monitors, automated and on-demand health checks, incident detection and
+management, maintenance windows, monitoring metrics, and dashboard information.
 
 ---
 
@@ -14,218 +11,362 @@ planned maintenance windows to suppress expected outages.
 
 ## 📡 Monitor Management
 
-Users can define and manage monitors representing external services.
+Monitors represent external services that the application checks for availability and performance.
 
 Each monitor supports:
 
-* 🏷️ Name
-* 🌐 Target URL
-* 🎯 Expected HTTP status code
-* ⏱️ Check interval (seconds)
-* 📧 Callback email
-* 🏷️ Optional tag for grouping and filtering
-* 🚧 Maintenance window scheduling
-* 🔢 Configurable consecutive failure threshold
-* 🔄 Active / inactive state
+* 🏷️ **Name**
+* 🌐 **Target URL**
+* 🎯 **Expected HTTP status**
+* ⏱️ **Check interval**
+* 📧 **Callback email**
+* 🏷️ **Tags** for grouping and filtering
+* ⚡ **Expected latency**
+* 🚧 **Maintenance window**
+* 🟢 **Active / inactive state**
 
-Monitors are persisted in PostgreSQL using Spring Data JPA.
+Monitors are persisted using Spring Data JPA.
 
 ---
 
 ## ⚙️ Automated Health Checks
 
-A background scheduler continuously evaluates monitors that are due for execution.
+Active monitors are checked automatically by the monitoring system.
 
-The monitoring pipeline leverages:
+Health checks:
 
-* Spring Scheduling
-* Spring Async
-* Spring Retry
+* 🌐 Send an HTTP request to the configured target
+* 🎯 Validate the returned HTTP status
+* ⚡ Measure response latency
+* 📊 Record the check result
+* 🚨 Process failures as incidents
+* 🚧 Respect active maintenance windows
+* 🐘 Persist monitoring data
 
-Each execution:
-
-* 🌍 Sends an HTTP GET request
-* ✅ Validates the returned HTTP status code
-* 🔁 Retries transient failures
-* ⚡ Executes checks concurrently
-* 📊 Records health check results
-* 🐘 Persists data using Spring Data JPA
+The application uses Spring Scheduling and asynchronous execution to perform monitoring tasks.
 
 ---
 
 ## 🧪 Manual Health Checks
 
-Health checks can also be executed on demand through a dedicated endpoint.
+Individual monitors can be checked on demand through the REST API.
 
-Manual executions reuse the exact same service layer as scheduled checks, ensuring consistent retry, validation,
-incident creation and metrics collection.
+Manual checks use the application's monitoring service layer and provide an immediate way to execute a health check for
+a specific monitor.
 
 ---
 
 ## 🚧 Maintenance Windows
 
-Monitors can be placed into a scheduled maintenance window.
+Maintenance windows allow planned downtime to be configured for a monitor.
 
-During an active maintenance window:
+A maintenance window consists of:
 
-* 🚧 Health checks continue to execute
-* 🚫 Incident creation is suppressed
-* 📊 Metrics continue to be collected
-* 🕒 Maintenance can be activated or removed independently of monitor configuration
+* 🕒 Start time
+* 🕒 End time
+
+During an active maintenance window, monitoring can continue while incident creation is suppressed for expected
+maintenance-related failures.
+
+Maintenance windows can be activated and deactivated independently of the monitor's main configuration.
 
 ---
 
 ## 🚨 Incident Management
 
-When a monitor exceeds its configured consecutive failure threshold outside an active maintenance window, an incident is
-automatically created.
+The application records incidents when monitored services fail their configured health checks.
 
-Detected failures include:
+Incidents can contain:
 
-* ❌ Unexpected HTTP status codes
-* ⏳ Connection failures
-* 🌐 Request timeouts after retry attempts
-
-Each incident records:
-
-* 🔗 Monitor reference
 * 🌐 Target URL
 * ⚠️ Incident type
 * 🎯 Expected HTTP status
-* 📉 Actual HTTP status (when available)
+* 📉 Actual HTTP status
 * 📝 Failure reason
 * 📧 Callback email
-* 🧬 Fingerprint for duplicate detection
-* 🕒 Created timestamp
+* 🕒 Creation timestamp
 * 🔓 Open / resolved state
+* ✅ Resolution timestamp
 
-Duplicate incidents are automatically detected using fingerprinting to prevent multiple open incidents representing the
-same underlying failure.
+Incidents can be:
+
+* 📋 Retrieved
+* 🔍 Filtered by monitor
+* 🔓 Filtered to open incidents
+* ✅ Resolved
+* 🗑️ Deleted
 
 ---
 
 ## 📈 Metrics
 
-Historical health check results are aggregated into monitor metrics including:
+Historical health-check results are aggregated into monitor-level metrics.
 
-* 📊 Total health checks
+Available metrics include:
+
+* 📊 Total checks
 * ✅ Successful checks
 * ❌ Failed checks
 * 📈 Uptime percentage
-* ⚡ Average response latency
+* ⚡ Average latency
 * 🚨 Open incident count
 
-Metrics can be queried for any reporting period using an optional cutoff date.
+Metrics can optionally be retrieved using a cutoff date.
+
+---
+
+## 📊 Dashboard
+
+The API provides a dashboard summary containing:
+
+* 🖥️ Total monitors
+* 🚨 Total incidents
+* 🔓 Open incidents
+* ✅ Closed incidents
 
 ---
 
 # 📡 API Endpoints
 
----
-
-## 🛠 Admin Monitor Management
+## 🛠️ Monitor Administration
 
 Base path: `/api/admin/monitors`
 
-| Method | Endpoint                           | Description                                      |
-|--------|------------------------------------|--------------------------------------------------|
-| POST   | `/api/admin/monitors`              | ➕ Create a new monitor                           |
-| GET    | `/api/admin/monitors`              | 📋 Retrieve all monitors (optional `tag` filter) |
-| GET    | `/api/admin/monitors/{id}`         | 🔍 Retrieve monitor by ID                        |
-| PUT    | `/api/admin/monitors/{id}`         | ✏️ Update monitor configuration                  |
-| PATCH  | `/api/admin/monitors/{id}/enable`  | 🟢 Enable monitor                                |
-| PATCH  | `/api/admin/monitors/{id}/disable` | 🔴 Disable monitor                               |
-| POST   | `/api/admin/monitors/run-all`      | 🚀 Execute health checks for all active monitors |
-| DELETE | `/api/admin/monitors/{id}`         | 🗑️ Delete monitor                               |
+| Method   | Endpoint                           | Description                                       |
+|----------|------------------------------------|---------------------------------------------------|
+| `POST`   | `/api/admin/monitors`              | ➕ Create a monitor                                |
+| `GET`    | `/api/admin/monitors`              | 📋 Retrieve monitors, optionally filtered by tags |
+| `GET`    | `/api/admin/monitors/{id}`         | 🔍 Retrieve a monitor by ID                       |
+| `PUT`    | `/api/admin/monitors/{id}`         | ✏️ Update monitor configuration                   |
+| `DELETE` | `/api/admin/monitors/{id}`         | 🗑️ Delete a monitor                              |
+| `PATCH`  | `/api/admin/monitors/{id}/enable`  | 🟢 Enable a monitor                               |
+| `PATCH`  | `/api/admin/monitors/{id}/disable` | 🔴 Disable a monitor                              |
+
+### Tag filtering
+
+The monitor collection endpoint supports an optional `tags` query parameter.
+
+```text
+GET /api/admin/monitors?tags=production&tags=critical
+```
 
 ---
 
-## 🚧 Maintenance Window Management
+## 🚧 Maintenance Windows
 
 Base path: `/api/admin/monitors`
 
-| Method | Endpoint                               | Description                                  |
-|--------|----------------------------------------|----------------------------------------------|
-| POST   | `/api/admin/monitors/{id}/maintenance` | 🚧 Schedule or activate a maintenance window |
-| DELETE | `/api/admin/monitors/{id}/maintenance` | ✅ Remove the active maintenance window       |
+| Method   | Endpoint                               | Description                       |
+|----------|----------------------------------------|-----------------------------------|
+| `POST`   | `/api/admin/monitors/{id}/maintenance` | 🚧 Activate a maintenance window  |
+| `DELETE` | `/api/admin/monitors/{id}/maintenance` | ✅ Deactivate a maintenance window |
 
 ---
 
-## 🧪 Manual Monitor Execution
+## 🧪 Manual Health Checks
 
 Base path: `/api/monitors`
 
-| Method | Endpoint                    | Description                         |
-|--------|-----------------------------|-------------------------------------|
-| GET    | `/api/monitors/{monitorId}` | ⚡ Execute an on-demand health check |
+| Method | Endpoint                    | Description                            |
+|--------|-----------------------------|----------------------------------------|
+| `GET`  | `/api/monitors/{monitorId}` | ⚡ Execute a health check for a monitor |
 
 ---
 
-## 🚨 Incident Retrieval
+## 🚨 Incident Management
+
+### Incident Retrieval
 
 Base path: `/api/incidents`
 
-| Method | Endpoint                                   | Description                         |
-|--------|--------------------------------------------|-------------------------------------|
-| GET    | `/api/incidents/{monitorId}`               | 📊 Retrieve incidents for a monitor |
-| GET    | `/api/incidents/{monitorId}?openOnly=true` | 🔓 Retrieve only open incidents     |
+| Method | Endpoint                                             | Description                         |
+|--------|------------------------------------------------------|-------------------------------------|
+| `GET`  | `/api/incidents`                                     | 📋 Retrieve incidents               |
+| `GET`  | `/api/incidents?monitorId={monitorId}`               | 🔍 Filter incidents by monitor      |
+| `GET`  | `/api/incidents?openOnly=true`                       | 🔓 Retrieve open incidents          |
+| `GET`  | `/api/incidents?monitorId={monitorId}&openOnly=true` | 🔍 Filter open incidents by monitor |
 
----
+The `openOnly` parameter controls whether only unresolved incidents are returned.
 
-## 🛠 Admin Incident Management
+### Incident Administration
 
 Base path: `/api/admin/incidents`
 
-| Method | Endpoint                                    | Description                    |
-|--------|---------------------------------------------|--------------------------------|
-| GET    | `/api/admin/incidents`                      | 📋 Retrieve all incidents      |
-| GET    | `/api/admin/incidents/open`                 | 🔓 Retrieve all open incidents |
-| PATCH  | `/api/admin/incidents/{incidentId}/resolve` | ✅ Resolve an incident          |
-| DELETE | `/api/admin/incidents/{incidentId}`         | 🗑️ Delete an incident         |
+| Method   | Endpoint                                    | Description            |
+|----------|---------------------------------------------|------------------------|
+| `PATCH`  | `/api/admin/incidents/{incidentId}/resolve` | ✅ Resolve an incident  |
+| `DELETE` | `/api/admin/incidents/{incidentId}`         | 🗑️ Delete an incident |
 
 ---
 
-## 📈 Metrics API
+## 📈 Metrics
 
 Base path: `/api/metrics/monitors`
 
-| Method | Endpoint                            | Description                                                              |
-|--------|-------------------------------------|--------------------------------------------------------------------------|
-| GET    | `/api/metrics/monitors/{monitorId}` | 📊 Retrieve monitor metrics (`cutoffDate` optional, format `YYYY-MM-DD`) |
+| Method | Endpoint                            | Description                       |
+|--------|-------------------------------------|-----------------------------------|
+| `GET`  | `/api/metrics/monitors/{monitorId}` | 📊 Retrieve metrics for a monitor |
 
-Metrics are calculated from persisted health check history.
-
----
-
-# 🛠 Technology Stack
-
-* ☕ Java 21
-* 🌱 Spring Boot 3.x
-* 🐘 PostgreSQL
-* 🗄️ Spring Data JPA
-* ⏰ Spring Scheduling
-* ⚡ Spring Async
-* 🔁 Spring Retry
-* 🗺️ MapStruct
-* ✅ Jakarta Bean Validation
-* 📖 OpenAPI / Swagger
+Supports the optional `cutoffDate` query parameter using the `YYYY-MM-DD` format.
 
 ---
 
-# 🧠 Architecture Overview
+## 📊 Dashboard
+
+| Method | Endpoint         | Description                       |
+|--------|------------------|-----------------------------------|
+| `GET`  | `/api/dashboard` | 📊 Retrieve dashboard information |
+
+---
+
+# 📦 Data Models
+
+## Monitor Request
+
+Used when creating or updating a monitor.
+
+| Field               | Type                | Required | Description            |
+|---------------------|---------------------|----------|------------------------|
+| `name`              | `string`            | ✅        | Monitor name           |
+| `url`               | `string`            | ✅        | Target URL             |
+| `expectedStatus`    | `integer`           | ❌        | Expected HTTP status   |
+| `intervalSeconds`   | `integer`           | ❌        | Monitoring interval    |
+| `callbackEmail`     | `string`            | ✅        | Callback email address |
+| `tags`              | `string[]`          | ❌        | Monitor tags           |
+| `maintenanceWindow` | `MaintenanceWindow` | ❌        | Maintenance period     |
+| `expectedLatency`   | `integer`           | ❌        | Expected latency       |
+
+---
+
+## Monitor Response
+
+| Field               | Type                | Description                   |
+|---------------------|---------------------|-------------------------------|
+| `id`                | `integer`           | Monitor identifier            |
+| `name`              | `string`            | Monitor name                  |
+| `url`               | `string`            | Target URL                    |
+| `expectedStatus`    | `integer`           | Expected HTTP status          |
+| `intervalSeconds`   | `integer`           | Monitoring interval           |
+| `active`            | `boolean`           | Whether monitoring is enabled |
+| `callbackEmail`     | `string`            | Callback email                |
+| `createdAt`         | `date-time`         | Creation timestamp            |
+| `tags`              | `string[]`          | Monitor tags                  |
+| `maintenanceWindow` | `MaintenanceWindow` | Active maintenance window     |
+| `expectedLatency`   | `integer`           | Expected latency              |
+
+---
+
+## Maintenance Window
+
+| Field   | Type        | Description  |
+|---------|-------------|--------------|
+| `start` | `date-time` | Window start |
+| `end`   | `date-time` | Window end   |
+
+---
+
+## Incident Response
+
+| Field            | Type        | Description                  |
+|------------------|-------------|------------------------------|
+| `url`            | `string`    | Monitored URL                |
+| `incidentType`   | `string`    | Type of incident             |
+| `expectedStatus` | `integer`   | Expected HTTP status         |
+| `actualStatus`   | `integer`   | Actual HTTP status           |
+| `failureReason`  | `string`    | Reason for failure           |
+| `callbackEmail`  | `string`    | Callback email               |
+| `createdAt`      | `date-time` | Incident creation time       |
+| `openIncident`   | `boolean`   | Whether the incident is open |
+| `resolvedAt`     | `date-time` | Incident resolution time     |
+
+---
+
+## Metrics Response
+
+| Field              | Type      | Description                  |
+|--------------------|-----------|------------------------------|
+| `monitorId`        | `integer` | Monitor identifier           |
+| `window`           | `string`  | Reporting window             |
+| `totalChecks`      | `integer` | Total number of checks       |
+| `successfulChecks` | `integer` | Successful checks            |
+| `failedChecks`     | `integer` | Failed checks                |
+| `uptimePercentage` | `double`  | Calculated uptime percentage |
+| `averageLatencyMs` | `double`  | Average response latency     |
+| `openIncidents`    | `integer` | Number of open incidents     |
+
+---
+
+## Dashboard Response
+
+| Field             | Type      | Description                |
+|-------------------|-----------|----------------------------|
+| `totalMonitors`   | `integer` | Total number of monitors   |
+| `totalIncidents`  | `integer` | Total number of incidents  |
+| `openIncidents`   | `integer` | Number of open incidents   |
+| `closedIncidents` | `integer` | Number of closed incidents |
+
+---
+
+# 🏗️ Architecture
+
+The application follows a layered Spring architecture with dedicated controllers, services, monitoring logic, incident
+management, metrics, and persistence.
 
 ```mermaid
 flowchart TD
-    A["🕒 Scheduler"] --> B["📥 Load Due Monitors"]
-    B --> C["⚡ Async Health Checks"]
-    C --> D["🌐 HTTP Request"]
-    D --> E["🔁 Retry Failed Requests"]
-    E --> F{"🚧 Maintenance Window?"}
-    F -- Yes --> G["📊 Persist Check Result"]
-    F -- No --> H{"Failure Threshold Reached?"}
-    H -- No --> G
-    H -- Yes --> I["🚨 Create / Update Incident"]
-    G --> J["📈 Update Metrics"]
-    I --> J
+    A["🌐 REST API"] --> B["🎛️ Controllers"]
+
+    B --> C["⚙️ Services"]
+
+    C --> D["🔍 Health Checks"]
+    C --> E["🚨 Incident Management"]
+    C --> F["📈 Metrics"]
+    C --> G["🚧 Maintenance"]
+
+    H["🕒 Scheduler"] --> C
+
+    D --> I["🌐 External Services"]
+
+    C --> J["🗄️ Spring Data JPA"]
+    E --> J
+    F --> J
+    G --> J
+
     J --> K["🐘 PostgreSQL"]
 ```
+
+### Monitoring flow
+
+```mermaid
+flowchart TD
+    A["🕒 Scheduler"] --> B["📋 Active Monitors"]
+    B --> C["⚡ Health Check"]
+    C --> D["🌐 HTTP Request"]
+
+    D --> E{"Health Check Result"}
+
+    E --> F["📊 Record Check"]
+
+    F --> G{"🚧 Maintenance Window?"}
+
+    G -- "Yes" --> H["📊 Metrics"]
+    G -- "No" --> I["🚨 Incident Processing"]
+
+    I --> H
+    H --> J["🐘 PostgreSQL"]
+```
+
+---
+
+# 🛠️ Technology Stack
+
+* ☕ **Java 21**
+* 🌱 **Spring Boot 3.x**
+* 🐘 **PostgreSQL**
+* 🗄️ **Spring Data JPA**
+* ⏰ **Spring Scheduling**
+* ⚡ **Spring Async**
+* 🔁 **Spring Retry**
+* 🗺️ **MapStruct**
+* ✅ **Jakarta Bean Validation**
+* 📖 **OpenAPI 3.1 / Swagger**

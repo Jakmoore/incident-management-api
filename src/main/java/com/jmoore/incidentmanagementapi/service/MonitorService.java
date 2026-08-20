@@ -1,5 +1,6 @@
 package com.jmoore.incidentmanagementapi.service;
 
+import com.jmoore.incidentmanagementapi.exception.IllegalOperationException;
 import com.jmoore.incidentmanagementapi.exception.MonitorNotFoundException;
 import com.jmoore.incidentmanagementapi.mapper.MonitorMapper;
 import com.jmoore.incidentmanagementapi.model.dto.monitor.MonitorRequestDto;
@@ -24,34 +25,29 @@ public class MonitorService {
     private final MonitorRepository monitorRepository;
 
     @Transactional
-    public MonitorResponseDto createMonitor(MonitorRequestDto request) {
-        log.info("Processing create monitor request for URL: {}", request.getUrl());
-
+    public MonitorResponseDto createMonitor(MonitorRequestDto request, String clientId) {
         Monitor toCreate = mapper.toEntity(request);
         toCreate.setActive(true);
         toCreate.setNextRunAt(calculateNextRunAt(request.getIntervalSeconds()));
         toCreate.setConsecutiveSuccesses(0);
         toCreate.setConsecutiveFailures(0);
+        toCreate.setClientId(clientId);
 
         Monitor saved = monitorRepository.save(toCreate);
 
         return mapper.toResponse(saved);
     }
 
-    public List<MonitorResponseDto> getAll(List<String> tags) {
-        log.info("Processing get all monitors request");
+    public List<MonitorResponseDto> getByTags(String[] tags, String clientId) {
+        List<Monitor> retrieved = tags.length == 1 && "*".equals(tags[0]) ?
+                monitorRepository.findByClientId(clientId) : monitorRepository.findByTagsAndClientId(tags, clientId);
 
-        List<Monitor> monitors = tags == null || tags.isEmpty() ?
-                monitorRepository.findAll() : monitorRepository.findByTags(tags);
-
-        return monitors.stream()
+        return retrieved.stream()
                 .map(mapper::toResponse)
                 .toList();
     }
 
     public MonitorResponseDto getById(Long id) {
-        log.info("Processing get monitor request for ID: {}", id);
-
         Monitor retrieved = getEntityById(id);
 
         return mapper.toResponse(retrieved);
@@ -59,83 +55,65 @@ public class MonitorService {
 
     @Transactional
     public MonitorResponseDto enableMonitor(Long id) {
-        log.info("Processing enable monitor request for ID {}", id);
-
         return updateActive(id, true);
     }
 
     @Transactional
     public MonitorResponseDto disableMonitor(Long id) {
-        log.info("Processing disable monitor request for ID {}", id);
-
         return updateActive(id, false);
     }
 
     @Transactional
     public MonitorResponseDto updateMonitorConfiguration(Long id, MonitorRequestDto request) {
-        log.info("Processing update monitor configuration for ID: {}", id);
-
         Monitor retrieved = getEntityById(id);
 
         mapper.updateEntityFromDto(request, retrieved);
-        monitorRepository.save(retrieved);
 
         return mapper.toResponse(retrieved);
     }
 
     @Transactional
-    public void deleteMonitor(Long id) {
-        log.info("Processing delete monitor request for ID: {}", id);
+    public void deleteMonitor(Long id, String clientId) {
+        Monitor retrieved = getEntityById(id);
 
-        Monitor ignored = getEntityById(id);
-
-        monitorRepository.deleteById(id);
+        // Don't want users deleting other user's monitors
+        if (clientId.equals(retrieved.getClientId())) {
+            monitorRepository.deleteById(id);
+        } else {
+            throw new IllegalOperationException("Client " + clientId + " can not delete monitor with ID: " + id);
+        }
     }
 
     @Transactional
     public MonitorResponseDto activateMaintenanceWindow(Long id, MaintenanceWindow maintenanceWindow) {
-        log.info("Processing activate maintenance window for ID: {}", id);
-
         Monitor retrieved = getEntityById(id);
         retrieved.setMaintenanceWindow(maintenanceWindow);
-        monitorRepository.save(retrieved);
 
         return mapper.toResponse(retrieved);
     }
 
     @Transactional
     public MonitorResponseDto deactivateMaintenanceWindow(Long id) {
-        log.info("Processing deactivate maintenance window for ID: {}", id);
-
         Monitor retrieved = getEntityById(id);
         retrieved.setMaintenanceWindow(null);
-        monitorRepository.save(retrieved);
 
         return mapper.toResponse(retrieved);
     }
 
     // Internal use only endpoints -------------------------------------------
-    @Transactional
-    public void save(Monitor monitor) {
-        monitorRepository.save(monitor);
-    }
-
     public Monitor getEntityById(Long id) {
         return monitorRepository.findById(id).orElseThrow(() -> new MonitorNotFoundException(id));
     }
 
     @Transactional
-    public void updateNextRunAt(Monitor monitor) {
-        monitor.setNextRunAt(calculateNextRunAt(monitor.getIntervalSeconds()));
-
-        monitorRepository.save(monitor);
+    public void updateNextRunAt(Long id) {
+        Monitor retrieved = getEntityById(id);
+        retrieved.setNextRunAt(calculateNextRunAt(retrieved.getIntervalSeconds()));
     }
 
     private MonitorResponseDto updateActive(Long id, boolean active) {
         Monitor retrieved = getEntityById(id);
         retrieved.setActive(active);
-
-        monitorRepository.save(retrieved);
 
         return mapper.toResponse(retrieved);
     }

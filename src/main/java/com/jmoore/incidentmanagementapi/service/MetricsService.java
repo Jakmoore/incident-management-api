@@ -1,10 +1,12 @@
 package com.jmoore.incidentmanagementapi.service;
 
+import com.jmoore.incidentmanagementapi.mapper.MetricsMapper;
 import com.jmoore.incidentmanagementapi.model.api.HealthCheckResult;
+import com.jmoore.incidentmanagementapi.model.dto.metrics.AverageMonitorMetricsResponseDto;
 import com.jmoore.incidentmanagementapi.model.dto.metrics.MetricsResponseDto;
+import com.jmoore.incidentmanagementapi.model.entity.metrics.MonitorMetricsPartial;
 import com.jmoore.incidentmanagementapi.model.entity.monitor.Monitor;
 import com.jmoore.incidentmanagementapi.model.entity.monitor.MonitorCheckResult;
-import com.jmoore.incidentmanagementapi.model.entity.metrics.MonitorMetricsPartial;
 import com.jmoore.incidentmanagementapi.repository.MonitorCheckResultRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,10 +18,11 @@ import java.time.LocalDateTime;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class MonitorCheckResultService {
+public class MetricsService {
 
     private final MonitorCheckResultRepository resultRepository;
     private final IncidentService incidentService;
+    private final MetricsMapper mapper;
 
     @Transactional
     public void processMonitorCheckResult(Monitor monitor, HealthCheckResult healthCheckResult) {
@@ -32,6 +35,10 @@ public class MonitorCheckResultService {
                 .build();
 
         resultRepository.save(monitorCheckResult);
+    }
+
+    public AverageMonitorMetricsResponseDto getAverageMonitorMetrics(String clientId) {
+        return mapper.toResponse(resultRepository.getAverageMonitorMetrics(clientId));
     }
 
     public MetricsResponseDto getMetrics(long monitorId, LocalDateTime cutoffDateTime) {

@@ -18,7 +18,7 @@ public interface MonitorMapper {
 
     MaintenanceWindow toEntity(MaintenanceWindowDto maintenanceWindow);
 
-    MaintenanceWindowDto toDto(MaintenanceWindow maintenanceWindow);
+    MaintenanceWindowDto toDto(MaintenanceWindow maintenanceWindow); // TODO: Used?
 
     void updateEntityFromDto(MonitorRequestDto requestDto, @MappingTarget Monitor entity);
 }

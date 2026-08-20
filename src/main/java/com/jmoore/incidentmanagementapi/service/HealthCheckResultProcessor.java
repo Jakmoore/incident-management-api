@@ -19,7 +19,7 @@ import java.util.Optional;
 public class HealthCheckResultProcessor {
 
     private final MonitorService monitorService;
-    private final MonitorCheckResultService monitorCheckResultService;
+    private final MetricsService metricsService;
     private final IncidentService incidentService;
     private final IncidentFingerprintGenerator fingerprintGenerator;
     private final NotificationService notificationService;
@@ -28,7 +28,7 @@ public class HealthCheckResultProcessor {
     public void process(HealthCheckResult healthCheckResult) {
         Monitor monitor = monitorService.getEntityById(healthCheckResult.monitorId());
 
-        monitorCheckResultService.processMonitorCheckResult(monitor, healthCheckResult);
+        metricsService.processMonitorCheckResult(monitor, healthCheckResult);
 
         if (!isMaintenanceWindow(monitor.getMaintenanceWindow().getStart(), monitor.getMaintenanceWindow().getEnd())) {
             if (healthCheckResult.success()) {
@@ -41,7 +41,6 @@ public class HealthCheckResultProcessor {
                     raiseResolutionNotification(healthCheckResult);
                 }
 
-                monitorService.save(monitor);
                 return;
             }
 

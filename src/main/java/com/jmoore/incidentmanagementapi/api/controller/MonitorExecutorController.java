@@ -1,4 +1,4 @@
-package com.jmoore.incidentmanagementapi.controller;
+package com.jmoore.incidentmanagementapi.api.controller;
 
 import com.jmoore.incidentmanagementapi.service.MonitorExecutorService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -16,13 +16,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RequestMapping("/api/monitors")
 @Tag(name = "Monitor Controller")
-public class MonitorController {
+public class MonitorExecutorController {
 
     private final MonitorExecutorService executerService;
 
     @Operation(summary = "Execute health check for monitor ID")
     @GetMapping("/{monitorId}")
-    public ResponseEntity<Void> runMonitor(@PathVariable Long monitorId) {
+    public ResponseEntity<Void> runMonitor(@PathVariable("monitorId") Long monitorId) {
         log.info("Executing manual health check for monitor ID: {}", monitorId);
         executerService.runMonitor(monitorId);
 
