@@ -38,7 +38,10 @@ public class MonitorAdminController {
             @RequestHeader("clientId") String clientId) {
         log.info("Processing create monitor request for client: {}", clientId);
 
-        MonitorResponseDto created = monitorService.createMonitor(createMonitorRequest, clientId);
+        MonitorResponseDto created = monitorService.createMonitor(
+                createMonitorRequest,
+                clientId
+        );
 
         return ResponseEntity.ok(created);
     }
@@ -55,7 +58,12 @@ public class MonitorAdminController {
             throw new InvalidTagsException("Invalid tags provided");
         }
 
-        return ResponseEntity.ok(monitorService.getByTags(tags, clientId));
+        return ResponseEntity.ok(
+                monitorService.getByTags(
+                        tags,
+                        clientId
+                )
+        );
     }
 
     @ApiResponse(responseCode = "200")
@@ -69,7 +77,9 @@ public class MonitorAdminController {
             @RequestHeader("clientId") String clientId) {
         log.info("Processing get monitor request for client: {}", clientId);
 
-        return ResponseEntity.ok(monitorService.getById(id));
+        return ResponseEntity.ok(
+                monitorService.getById(id)
+        );
     }
 
     @ApiResponse(responseCode = "200")
@@ -80,7 +90,9 @@ public class MonitorAdminController {
             @RequestHeader("clientId") String clientId) {
         log.info("Processing enable monitor request for client {}", clientId);
 
-        return ResponseEntity.ok(monitorService.enableMonitor(id));
+        return ResponseEntity.ok(
+                monitorService.enableMonitor(id)
+        );
     }
 
     @ApiResponse(responseCode = "200")

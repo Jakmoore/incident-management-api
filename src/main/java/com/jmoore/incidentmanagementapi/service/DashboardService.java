@@ -16,13 +16,27 @@ public class DashboardService {
 
     public DashboardResponseDto getDashboardInformation(String clientId) {
         String[] tags = {"*"};
-        int totalMonitors = monitorService.getByTags(tags, clientId).size();
 
-        List<IncidentResponseDto> incidents = incidentService.getIncidentsFiltered(null, false, clientId);
+        int totalMonitors = monitorService.getByTags(
+                tags,
+                clientId
+        ).size();
+
+        List<IncidentResponseDto> incidents = incidentService.getIncidentsFiltered(
+                null,
+                false,
+                clientId
+        );
+
         long totalIncidents = incidents.size();
         long openIncidents = incidents.stream().filter(incident -> Boolean.TRUE.equals(incident.getOpenIncident())).count();
         long closedIncidents = totalIncidents - openIncidents;
 
-        return new DashboardResponseDto(totalMonitors, (int) totalIncidents, (int) openIncidents, (int) closedIncidents);
+        return new DashboardResponseDto(
+                totalMonitors,
+                (int) totalIncidents,
+                (int) openIncidents,
+                (int) closedIncidents
+        );
     }
 }

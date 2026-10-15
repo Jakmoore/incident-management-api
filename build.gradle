@@ -21,9 +21,14 @@ repositories {
 
 ext {
     mapstructVersion = '1.6.3'
+    testcontainersVersion = '2.0.2'
 }
 
 dependencies {
+
+    // ============================================================
+    // APPLICATION
+    // ============================================================
 
     // Spring Web
     implementation 'org.springframework.boot:spring-boot-starter-webmvc'
@@ -56,11 +61,35 @@ dependencies {
     // Codec
     implementation 'commons-codec:commons-codec:1.22.0'
 
-    // Tests
+
+    // ============================================================
+    // TESTING
+    // ============================================================
+
+    // Spring Boot testing infrastructure:
+    // JUnit 5, Mockito, AssertJ, Spring Test, etc.
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+    // MVC/controller testing
     testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
-    testCompileOnly 'org.projectlombok:lombok'
+
+    // Testcontainers integration
+    testImplementation "org.testcontainers:testcontainers:${testcontainersVersion}"
+    testImplementation "org.testcontainers:junit-jupiter:${testcontainersVersion}"
+    testImplementation "org.testcontainers:postgresql:${testcontainersVersion}"
+
+    // PostgreSQL JDBC driver is needed when running PostgreSQL
+    // inside Testcontainers during tests.
+    testRuntimeOnly 'org.postgresql:postgresql'
+
+    // JUnit platform
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    // Lombok in tests
+    testCompileOnly 'org.projectlombok:lombok'
     testAnnotationProcessor 'org.projectlombok:lombok'
+
+    // Kotlin
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 }
 

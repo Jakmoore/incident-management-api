@@ -25,7 +25,8 @@ public class IncidentController {
     @ApiResponse(responseCode = "200")
     @Operation(
             summary = "Get incidents filtered by client ID, monitor ID and open only",
-            description = "If only open incidents are required, set openOnly to true")
+            description = "If only open incidents are required, set openOnly to true"
+    )
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<IncidentResponseDto>> getIncidents(
             @RequestParam(name = "monitorId", required = false) Long monitorId,
@@ -33,6 +34,12 @@ public class IncidentController {
             @RequestHeader("clientId") String clientId) {
         log.info("Processing get incidents request for client: {}", clientId);
 
-        return ResponseEntity.ok(incidentService.getIncidentsFiltered(monitorId, openOnly, clientId));
+        return ResponseEntity.ok(
+                incidentService.getIncidentsFiltered(
+                        monitorId,
+                        openOnly,
+                        clientId
+                )
+        );
     }
 }

@@ -76,7 +76,8 @@ public class IncidentService {
 
         if (Boolean.TRUE.equals(openOnly)) {
             incidents = incidents.stream()
-                    .filter(Incident::getOpenIncident).toList();
+                    .filter(Incident::getOpenIncident)
+                    .toList();
         }
 
         return incidents.stream()

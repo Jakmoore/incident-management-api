@@ -30,40 +30,48 @@ public class HealthCheckResultProcessor {
 
         metricsService.processMonitorCheckResult(monitor, healthCheckResult);
 
-        if (!isMaintenanceWindow(monitor.getMaintenanceWindow().getStart(), monitor.getMaintenanceWindow().getEnd())) {
-            if (healthCheckResult.success()) {
-                monitor.recordSuccess();
-
-                if (monitor.getConsecutiveSuccesses() >= 3) {
-                    String fingerprint = fingerprintGenerator.generate(monitor.getId() + monitor.getUrl() + healthCheckResult.failureType().name() + monitor.getCallbackEmail());
-                    Optional<Incident> incident = incidentService.getLastOpenIncidentByFingerprint(fingerprint);
-                    incident.ifPresent(incidentService::resolveIncident);
-                    raiseResolutionNotification(healthCheckResult);
-                }
-
-                return;
-            }
-
-            log.warn("Healthcheck for monitor ID: {} failed with: {}", monitor.getId(), healthCheckResult.failureType());
-
-            monitor.recordFailure();
-
-            if (monitor.getConsecutiveFailures() >= 3) {
-                boolean incidentRaised = incidentService.processIncident(healthCheckResult.monitorId(), healthCheckResult.failureType(), healthCheckResult.actualStatus());
-
-                // Only send notification if an incident was raised. We don't want to send many notifications for the same issue
-                if (incidentRaised) {
-                    log.warn("Raising notification for URL: {} callback email: {}",
-                            healthCheckResult.url(),
-                            healthCheckResult.callbackEmail()
-                    );
-
-                    raiseFailureNotification(healthCheckResult);
-                }
-            }
+        if (isMaintenanceWindow(monitor.getMaintenanceWindow().getStart(), monitor.getMaintenanceWindow().getEnd())) {
+            log.debug("Monitor {} is in maintenance window, will not process notifications", monitor.getId());
+            return;
         }
 
-        log.debug("Monitor {} is in maintenance window, will not process notifications", monitor.getId());
+        if (healthCheckResult.success()) {
+            monitor.recordSuccess();
+
+            if (monitor.getConsecutiveSuccesses() >= 3) {
+                String fingerprint = fingerprintGenerator.generate(
+                        monitor.getId() + monitor.getUrl() + healthCheckResult.failureType().name() + monitor.getCallbackEmail()
+                );
+
+                Optional<Incident> incident = incidentService.getLastOpenIncidentByFingerprint(fingerprint);
+                incident.ifPresent(incidentService::resolveIncident);
+                raiseResolutionNotification(healthCheckResult);
+            }
+
+            return;
+        }
+
+        log.warn("Healthcheck for monitor ID: {} failed with: {}", monitor.getId(), healthCheckResult.failureType());
+
+        monitor.recordFailure();
+
+        if (monitor.getConsecutiveFailures() >= 3) {
+            boolean incidentRaised = incidentService.processIncident(
+                    healthCheckResult.monitorId(),
+                    healthCheckResult.failureType(),
+                    healthCheckResult.actualStatus()
+            );
+
+            // Only send notification if an incident was raised. We don't want to send many notifications for the same issue
+            if (incidentRaised) {
+                log.warn("Raising notification for URL: {} callback email: {}",
+                        healthCheckResult.url(),
+                        healthCheckResult.callbackEmail()
+                );
+
+                raiseFailureNotification(healthCheckResult);
+            }
+        }
     }
 
     private boolean isMaintenanceWindow(LocalDateTime maintenanceStart, LocalDateTime maintenanceEnd) {

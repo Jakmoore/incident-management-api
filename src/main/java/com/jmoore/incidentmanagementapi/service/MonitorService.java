@@ -40,7 +40,11 @@ public class MonitorService {
 
     public List<MonitorResponseDto> getByTags(String[] tags, String clientId) {
         List<Monitor> retrieved = tags.length == 1 && "*".equals(tags[0]) ?
-                monitorRepository.findByClientId(clientId) : monitorRepository.findByTagsAndClientId(tags, clientId);
+                monitorRepository.findByClientId(clientId) :
+                monitorRepository.findByTagsAndClientId(
+                        tags,
+                        clientId
+                );
 
         return retrieved.stream()
                 .map(mapper::toResponse)

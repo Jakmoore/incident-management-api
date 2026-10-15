@@ -38,7 +38,11 @@ public class MetricsService {
     }
 
     public AverageMonitorMetricsResponseDto getAverageMonitorMetrics(String clientId) {
-        return mapper.toResponse(resultRepository.getAverageMonitorMetrics(clientId));
+        return mapper.toResponse(
+                resultRepository.getAverageMonitorMetrics(
+                        clientId
+                )
+        );
     }
 
     public MetricsResponseDto getMetrics(long monitorId, LocalDateTime cutoffDateTime) {
